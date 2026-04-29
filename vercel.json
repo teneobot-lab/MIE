@@ -1,5 +1,5 @@
 {
-  "outputDirectory": "artifacts/mie-ayam-berteman/dist/public",
+  "outputDirectory": "dist/public",
   "rewrites": [
     {
       "source": "/api-mab/:path*",
