@@ -1,0 +1,507 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Mie Ayam Berteman API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: menu
+    description: Menu items
+  - name: orders
+    description: Customer orders
+  - name: songs
+    description: Song requests and leaderboard
+  - name: stats
+    description: Community statistics
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /menu:
+    get:
+      operationId: listMenu
+      tags: [menu]
+      summary: List all menu items
+      parameters:
+        - in: query
+          name: category
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Menu items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MenuItem"
+
+  /menu/{id}:
+    get:
+      operationId: getMenuItem
+      tags: [menu]
+      summary: Get menu item by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /orders:
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create an order with a song request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCreateInput"
+      responses:
+        "201":
+          description: Order created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /orders/recent:
+    get:
+      operationId: listRecentOrders
+      tags: [orders]
+      summary: Recent orders feed for community vibe
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Recent orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OrderSummary"
+
+  /songs/leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [songs]
+      summary: Top songs this week
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Leaderboard"
+
+  /songs/now-playing:
+    get:
+      operationId: getNowPlaying
+      tags: [songs]
+      summary: Currently playing track
+      responses:
+        "200":
+          description: Now playing
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NowPlaying"
+
+  /songs/{id}/upvote:
+    post:
+      operationId: upvoteSong
+      tags: [songs]
+      summary: Upvote a song to push it up the leaderboard
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpvoteInput"
+      responses:
+        "200":
+          description: Upvote applied
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SongEntry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /songs/archive:
+    get:
+      operationId: listArchive
+      tags: [songs]
+      summary: Past weekly leaderboards
+      responses:
+        "200":
+          description: Archive list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArchiveWeek"
+
+  /songs/recent-requests:
+    get:
+      operationId: listRecentRequests
+      tags: [songs]
+      summary: Latest song requests as they come in
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            default: 12
+      responses:
+        "200":
+          description: Recent requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SongEntry"
+
+  /stats/overview:
+    get:
+      operationId: getOverviewStats
+      tags: [stats]
+      summary: Community-wide stats summary
+      responses:
+        "200":
+          description: Overview stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OverviewStats"
+
+  /stats/top-friends:
+    get:
+      operationId: getTopFriends
+      tags: [stats]
+      summary: Top requesters this week
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          schema:
+            type: integer
+            default: 5
+      responses:
+        "200":
+          description: Top friends
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FriendSummary"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required: [status]
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+
+    MenuItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        price:
+          type: integer
+          description: Price in IDR (Rupiah)
+        imageUrl:
+          type: string
+          nullable: true
+        spicy:
+          type: boolean
+        available:
+          type: boolean
+      required: [id, name, description, category, price, spicy, available]
+
+    CartItemInput:
+      type: object
+      properties:
+        menuItemId:
+          type: integer
+        quantity:
+          type: integer
+          minimum: 1
+      required: [menuItemId, quantity]
+
+    SongRequestInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        artist:
+          type: string
+          minLength: 1
+        message:
+          type: string
+          nullable: true
+      required: [title, artist]
+
+    OrderCreateInput:
+      type: object
+      properties:
+        handle:
+          type: string
+          minLength: 1
+          description: Customer handle / nickname
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/CartItemInput"
+        songRequest:
+          $ref: "#/components/schemas/SongRequestInput"
+      required: [handle, items, songRequest]
+
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        menuItemId:
+          type: integer
+        name:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: integer
+      required: [id, menuItemId, name, quantity, price]
+
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+        handle:
+          type: string
+        total:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/OrderItem"
+        songRequest:
+          $ref: "#/components/schemas/SongEntry"
+      required: [id, handle, total, createdAt, items, songRequest]
+
+    OrderSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        handle:
+          type: string
+        total:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        itemCount:
+          type: integer
+        songTitle:
+          type: string
+        songArtist:
+          type: string
+      required: [id, handle, total, createdAt, itemCount, songTitle, songArtist]
+
+    SongEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        artist:
+          type: string
+        message:
+          type: string
+          nullable: true
+        requesterHandle:
+          type: string
+        upvotes:
+          type: integer
+        requests:
+          type: integer
+        score:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, artist, requesterHandle, upvotes, requests, score, createdAt]
+
+    Leaderboard:
+      type: object
+      properties:
+        weekStart:
+          type: string
+          format: date-time
+        weekEnd:
+          type: string
+          format: date-time
+        resetsAt:
+          type: string
+          format: date-time
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/SongEntry"
+      required: [weekStart, weekEnd, resetsAt, entries]
+
+    NowPlaying:
+      type: object
+      properties:
+        song:
+          $ref: "#/components/schemas/SongEntry"
+        queue:
+          type: array
+          items:
+            $ref: "#/components/schemas/SongEntry"
+      required: [queue]
+
+    UpvoteInput:
+      type: object
+      properties:
+        handle:
+          type: string
+          minLength: 1
+      required: [handle]
+
+    ArchiveWeek:
+      type: object
+      properties:
+        weekStart:
+          type: string
+          format: date-time
+        weekEnd:
+          type: string
+          format: date-time
+        totalRequests:
+          type: integer
+        topSongs:
+          type: array
+          items:
+            $ref: "#/components/schemas/SongEntry"
+      required: [weekStart, weekEnd, totalRequests, topSongs]
+
+    OverviewStats:
+      type: object
+      properties:
+        totalOrders:
+          type: integer
+        totalRequests:
+          type: integer
+        totalFriends:
+          type: integer
+        currentWeekRequests:
+          type: integer
+        weekStart:
+          type: string
+          format: date-time
+        weekEnd:
+          type: string
+          format: date-time
+      required: [totalOrders, totalRequests, totalFriends, currentWeekRequests, weekStart, weekEnd]
+
+    FriendSummary:
+      type: object
+      properties:
+        handle:
+          type: string
+        orderCount:
+          type: integer
+        requestCount:
+          type: integer
+        upvotesGiven:
+          type: integer
+      required: [handle, orderCount, requestCount, upvotesGiven]

@@ -1,0 +1,138 @@
+**Prompt:**
+
+Buat sebuah website untuk brand kuliner bernama **“Mie Ayam Berteman”**, dengan konsep utama: makanan + budaya musik grunge dan pop punk sebagai sarana membangun koneksi antar pelanggan.
+
+### 🎸 Konsep Utama
+
+Website ini bukan hanya tempat jualan mie ayam, tapi juga komunitas kecil berbasis musik. Setiap pelanggan dianggap “teman” yang berkontribusi pada suasana musik di tempat.
+
+Atmosfer visual:
+
+* Terinspirasi dari scene **grunge & pop punk**
+* Warna dominan: hitam, putih, merah, dengan aksen neon
+* Font: bold, sedikit “berantakan”, DIY style (zine aesthetic)
+* Elemen visual:
+
+  * sticker band
+  * graffiti ringan
+  * poster konser
+  * efek noise / grain
+
+---
+
+### 🍜 Fitur Utama
+
+#### 1. Menu Makanan
+
+* Daftar menu mie ayam dan minuman
+* Tampilan simpel tapi edgy
+* Setiap menu bisa diklik untuk detail
+
+---
+
+#### 2. Sistem “1 Pembelian = 1 Request Lagu”
+
+* Setiap user yang melakukan pembelian:
+
+  * Mendapat hak untuk request 1 lagu
+  * Input:
+
+    * Judul lagu
+    * Nama artist/band
+    * (opsional) pesan singkat
+
+* Lagu yang direquest:
+
+  * Masuk ke sistem leaderboard
+  * Bisa ditampilkan sebagai “Now Playing Queue”
+
+---
+
+#### 3. 🎶 Leaderboard Lagu
+
+* Menampilkan lagu paling populer minggu ini
+* Ranking berdasarkan:
+
+  * jumlah request
+  * interaksi (opsional: like/upvote)
+
+Tampilan:
+
+* Top 10 lagu
+* Menampilkan:
+
+  * Judul lagu
+  * Artist
+  * Jumlah request
+  * Username/requester
+
+---
+
+#### 4. ⏳ Reset Mingguan
+
+* Leaderboard akan:
+
+  * Reset otomatis setiap 7 hari
+  * Arsip minggu sebelumnya disimpan (history)
+
+---
+
+#### 5. User System (Optional tapi direkomendasikan)
+
+* Login / register
+* Setiap user punya:
+
+  * riwayat order
+  * riwayat request lagu
+
+---
+
+#### 6. 🎧 Now Playing Section
+
+* Menampilkan lagu yang sedang diputar
+* Bisa diintegrasikan dengan:
+
+  * Spotify embed / YouTube
+* Queue berdasarkan leaderboard atau urutan request
+
+---
+
+### 🧠 UX & Interaksi
+
+* Micro interaction:
+
+  * klik → efek glitch / distortion
+* Loading animation:
+
+  * gaya kaset tape / radio lama
+* Sound effect ringan saat navigasi (optional)
+
+---
+
+### 🛠️ Tech Suggestion
+
+* Frontend: React / Next.js
+* Backend: Supabase (auth + database + realtime)
+* Database:
+
+  * users
+  * orders
+  * song_requests
+  * leaderboard
+
+---
+
+### 🎯 Goal
+
+Menciptakan pengalaman:
+
+> “makan mie ayam sambil jadi bagian dari playlist bersama”
+
+Website harus terasa:
+
+* raw
+* rebellious
+* tapi tetap usable
+
+Bukan sekadar restoran, tapi tempat nongkrong digital dengan identitas musik yang kuat.
+BUILD FULL STACK DENGAN REACT DAN NODEJS

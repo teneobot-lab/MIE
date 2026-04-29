@@ -1,0 +1,31 @@
+uploads = []
+
+[[generated]]
+id = "rCPT1jyJ2ocwzGe9vrwNP"
+uri = "file://artifacts/mie-ayam-berteman/public/images/hero.png"
+type = "image"
+title = "grunge warung hero image"
+
+[[generated]]
+id = "dXJ6AVwrDJOnEeLVZUqT8"
+uri = "file://artifacts/mie-ayam-berteman/public/images/mie-ayam.png"
+type = "image"
+title = "mie ayam bowl"
+
+[[generated]]
+id = "WIEfdhLDz4tanpj1c3izt"
+uri = "file://artifacts/mie-ayam-berteman/public/images/es-teh.png"
+type = "image"
+title = "es teh manis"
+
+[[generated]]
+id = "Wne0JxQhXetY0r9KXcRLN"
+uri = "file://artifacts/mie-ayam-berteman/public/images/noise.png"
+type = "image"
+title = "photocopy noise texture"
+
+[[outputs]]
+id = "3evkIscn9cCH8YJAI80jL"
+uri = "file://exports/mie-ayam-berteman.zip"
+type = "unspecified"
+title = "Mie Ayam Berteman — Source + DEPLOY.md (ZIP)"
