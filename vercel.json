@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api-mab/:path*",
+      "destination": "http://113.29.232.135:8080/:path*"
+    }
+  ]
+}
