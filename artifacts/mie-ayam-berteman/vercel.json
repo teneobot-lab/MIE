@@ -2,11 +2,11 @@
   "outputDirectory": "dist/public",
   "rewrites": [
     {
-      "source": "/api-mab/:path*",
-      "destination": "http://113.29.232.135:8080/:path*"
+      "source": "/api/proxy/:path*",
+      "destination": "/api/proxy"
     },
     {
-      "source": "/((?!api-mab).*)",
+      "source": "/((?!api).*)",
       "destination": "/index.html"
     }
   ]
