@@ -4,6 +4,7 @@ import menuRouter from "./menu";
 import ordersRouter from "./orders";
 import songsRouter from "./songs";
 import statsRouter from "./stats";
+import adminMenuRouter from "./admin-menu";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(menuRouter);
 router.use(ordersRouter);
 router.use(songsRouter);
 router.use(statsRouter);
+router.use(adminMenuRouter);
 
 export default router;

@@ -1,4 +1,6 @@
 import express, { type Express } from "express";
+import path from "path";
+import path from "path";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
@@ -32,6 +34,8 @@ const corsOrigins = corsOriginEnv
 app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static("/var/www/mie-ayam-berteman/uploads"));
+app.use("/uploads", express.static("/var/www/mie-ayam-berteman/uploads"));
 
 app.use("/api", router);
 

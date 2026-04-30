@@ -14,6 +14,7 @@ import Leaderboard from "@/pages/leaderboard";
 import NowPlaying from "@/pages/now-playing";
 import Friends from "@/pages/friends";
 import NotFound from "@/pages/not-found";
+import AdminMenu from "@/pages/admin-menu";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,6 +38,7 @@ function Router() {
           <Route path="/leaderboard" component={Leaderboard} />
           <Route path="/now-playing" component={NowPlaying} />
           <Route path="/friends" component={Friends} />
+          <Route path="/admin/menu" component={AdminMenu} />
           <Route component={NotFound} />
         </Switch>
       </main>
