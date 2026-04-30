@@ -19,6 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { YouTubeSongSearch } from "@/components/ui/youtube-song-search";
 import { Textarea } from "@/components/ui/textarea";
 
 const orderSchema = z.object({
@@ -251,7 +252,13 @@ export default function Order() {
                       <FormItem>
                         <FormLabel className="font-bold uppercase tracking-widest text-xs">Judul Lagu</FormLabel>
                         <FormControl>
-                          <Input placeholder="Misal: September" className="zine-border rounded-none font-mono focus-visible:ring-primary" {...field} />
+                          <YouTubeSongSearch
+                            placeholder="Cari judul lagu..."
+                            onSelect={(title, artist) => {
+                              form.setValue("songTitle", title);
+                              form.setValue("songArtist", artist);
+                            }}
+                          />
                         </FormControl>
                         <FormMessage className="font-mono text-xs text-destructive" />
                       </FormItem>
