@@ -3,8 +3,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { Receipt, ChefHat, CheckCircle, XCircle, Clock, Printer, RefreshCw } from "lucide-react";
-import { QrisModal } from "@/components/ui/qris-modal";
 import { Button } from "@/components/ui/button";
+import { QrisModal } from "@/components/ui/qris-modal";
 
 type OrderItem = { id: number; name: string; quantity: number; price: number };
 type Payment = { id: number; method: string; status: string; amount: number; paidAt: string | null };
@@ -42,13 +42,10 @@ function StatusBadge({ payment }: { payment: Payment | null }) {
 function ReceiptPreview({ order, type }: { order: Order; type: "customer" | "kitchen" }) {
   const isPaid = order.payment?.status === "paid";
   const now = new Date().toLocaleString("id-ID");
-
   if (type === "kitchen") {
     return (
       <div className="font-mono text-sm bg-white text-black p-4 border-2 border-dashed border-gray-400 w-72 mx-auto">
-        <div className="text-center font-black text-lg mb-2 border-b-2 border-black pb-2">
-          *** KITCHEN ***
-        </div>
+        <div className="text-center font-black text-lg mb-2 border-b-2 border-black pb-2">*** KITCHEN ***</div>
         <div className="mb-2">
           <p>Order #{order.id}</p>
           <p>Customer: @{order.handle}</p>
@@ -61,13 +58,10 @@ function ReceiptPreview({ order, type }: { order: Order; type: "customer" | "kit
             </div>
           ))}
         </div>
-        <div className="text-center border-t border-dashed border-gray-400 pt-2 font-black">
-          SEGERA DIPROSES!
-        </div>
+        <div className="text-center border-t border-dashed border-gray-400 pt-2 font-black">SEGERA DIPROSES!</div>
       </div>
     );
   }
-
   return (
     <div className="font-mono text-sm bg-white text-black p-4 border-2 border-dashed border-gray-400 w-72 mx-auto">
       <div className="text-center mb-2">
@@ -104,8 +98,8 @@ function ReceiptPreview({ order, type }: { order: Order; type: "customer" | "kit
         <p>Jangan lupa request lagu 🎵</p>
       </div>
     </div>
-
-
+  );
+}
 
 export default function Kasir() {
   const qc = useQueryClient();
@@ -113,6 +107,7 @@ export default function Kasir() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [receiptType, setReceiptType] = useState<"customer" | "kitchen">("customer");
   const [filter, setFilter] = useState<"all" | "pending" | "paid">("all");
+  const [showQris, setShowQris] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   const { data: orders = [], isLoading, refetch } = useQuery<Order[]>({
@@ -150,11 +145,7 @@ export default function Kasir() {
     if (!content) return;
     const win = window.open("", "_blank");
     if (!win) return;
-    win.document.write(`
-      <html><head><title>Struk</title>
-      <style>body{margin:0;padding:16px;font-family:monospace;}</style>
-      </head><body>${content.innerHTML}</body></html>
-    `);
+    win.document.write(`<html><head><title>Struk</title><style>body{margin:0;padding:16px;font-family:monospace;}</style></head><body>${content.innerHTML}</body></html>`);
     win.document.close();
     win.print();
     win.close();
@@ -170,15 +161,16 @@ export default function Kasir() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-black uppercase tracking-tight">🧾 Kasir</h1>
-        <a href="/kasir/laporan" className="flex items-center gap-2 text-sm font-mono border-2 border-foreground px-3 py-1.5 hover:bg-secondary transition-colors">
-          📊 Laporan
-        </a>
-        <button onClick={() => refetch()} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-          <RefreshCw className="w-4 h-4" /> Refresh
-        </button>
+        <div className="flex gap-2">
+          <a href="/kasir/laporan" className="flex items-center gap-2 text-sm font-mono border-2 border-foreground px-3 py-1.5 hover:bg-secondary transition-colors">
+            📊 Laporan
+          </a>
+          <button onClick={() => refetch()} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+            <RefreshCw className="w-4 h-4" /> Refresh
+          </button>
+        </div>
       </div>
 
-      {/* Filter */}
       <div className="flex gap-2 mb-6">
         {(["all", "pending", "paid"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
@@ -186,21 +178,17 @@ export default function Kasir() {
             {f === "all" ? "Semua" : f === "pending" ? "Belum Bayar" : "Lunas"}
           </button>
         ))}
-        <span className="ml-auto text-xs font-mono text-muted-foreground self-center">
-          Auto-refresh 10s
-        </span>
+        <span className="ml-auto text-xs font-mono text-muted-foreground self-center">Auto-refresh 10s</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Order list */}
         <div className="space-y-3">
           {isLoading ? (
             <p className="text-center py-8 text-muted-foreground">Loading...</p>
           ) : filtered.length === 0 ? (
             <p className="text-center py-8 text-muted-foreground font-mono">Tidak ada order</p>
           ) : filtered.map(order => (
-            <div key={order.id}
-              onClick={() => setSelectedOrder(order)}
+            <div key={order.id} onClick={() => setSelectedOrder(order)}
               className={`border-2 p-4 cursor-pointer transition-all hover:border-primary ${selectedOrder?.id === order.id ? "border-primary bg-primary/5" : "border-foreground"}`}>
               <div className="flex items-start justify-between mb-2">
                 <div>
@@ -220,13 +208,10 @@ export default function Kasir() {
           ))}
         </div>
 
-        {/* Detail & actions */}
         <div>
           {selectedOrder ? (
             <div className="border-2 border-foreground p-4 sticky top-4">
               <h2 className="font-black text-lg mb-4 uppercase">Order #{selectedOrder.id}</h2>
-
-              {/* Receipt preview */}
               <div className="flex gap-2 mb-4">
                 <button onClick={() => setReceiptType("customer")}
                   className={`flex items-center gap-1 text-xs px-3 py-1.5 border-2 font-mono transition-colors ${receiptType === "customer" ? "bg-foreground text-background border-foreground" : "border-foreground"}`}>
@@ -237,12 +222,9 @@ export default function Kasir() {
                   <ChefHat className="w-3 h-3" /> Kitchen
                 </button>
               </div>
-
               <div ref={printRef} className="mb-4 overflow-auto">
                 <ReceiptPreview order={selectedOrder} type={receiptType} />
               </div>
-
-              {/* Actions */}
               <div className="space-y-2">
                 <Button onClick={handlePrint} variant="outline" className="w-full gap-2">
                   <Printer className="w-4 h-4" /> Print Struk
@@ -287,5 +269,3 @@ export default function Kasir() {
     </div>
   );
 }
-
-
