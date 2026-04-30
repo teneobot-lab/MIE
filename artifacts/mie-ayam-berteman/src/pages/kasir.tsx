@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { Receipt, ChefHat, CheckCircle, XCircle, Clock, Printer, RefreshCw } from "lucide-react";
+import { QrisModal } from "@/components/ui/qris-modal";
 import { Button } from "@/components/ui/button";
 
 type OrderItem = { id: number; name: string; quantity: number; price: number };
@@ -103,6 +104,18 @@ function ReceiptPreview({ order, type }: { order: Order; type: "customer" | "kit
         <p>Jangan lupa request lagu 🎵</p>
       </div>
     </div>
+
+      {showQris && selectedOrder && (
+        <QrisModal
+          orderId={selectedOrder.id}
+          amount={selectedOrder.total}
+          onConfirm={() => {
+            payMutation.mutate({ id: selectedOrder.id, method: "qris" });
+            setShowQris(false);
+          }}
+          onClose={() => setShowQris(false)}
+        />
+      )}
   );
 }
 
@@ -252,8 +265,8 @@ export default function Kasir() {
                       disabled={payMutation.isPending} className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white">
                       <CheckCircle className="w-4 h-4" /> Bayar Cash
                     </Button>
-                    <Button onClick={() => payMutation.mutate({ id: selectedOrder.id, method: "qris" })}
-                      disabled={payMutation.isPending} className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white">
+                    <Button onClick={() => setShowQris(true)}
+                      className="w-full gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                       <CheckCircle className="w-4 h-4" /> Bayar QRIS
                     </Button>
                     <Button onClick={() => cancelMutation.mutate(selectedOrder.id)}
@@ -272,5 +285,17 @@ export default function Kasir() {
         </div>
       </div>
     </div>
+
+      {showQris && selectedOrder && (
+        <QrisModal
+          orderId={selectedOrder.id}
+          amount={selectedOrder.total}
+          onConfirm={() => {
+            payMutation.mutate({ id: selectedOrder.id, method: "qris" });
+            setShowQris(false);
+          }}
+          onClose={() => setShowQris(false)}
+        />
+      )}
   );
 }
