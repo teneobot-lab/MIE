@@ -2,11 +2,7 @@
   "outputDirectory": "dist/public",
   "rewrites": [
     {
-      "source": "/api/proxy/:path*",
-      "destination": "/api/proxy"
-    },
-    {
-      "source": "/((?!api).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
