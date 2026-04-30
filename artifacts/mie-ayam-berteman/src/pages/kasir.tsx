@@ -105,19 +105,7 @@ function ReceiptPreview({ order, type }: { order: Order; type: "customer" | "kit
       </div>
     </div>
 
-      {showQris && selectedOrder && (
-        <QrisModal
-          orderId={selectedOrder.id}
-          amount={selectedOrder.total}
-          onConfirm={() => {
-            payMutation.mutate({ id: selectedOrder.id, method: "qris" });
-            setShowQris(false);
-          }}
-          onClose={() => setShowQris(false)}
-        />
-      )}
-  );
-}
+
 
 export default function Kasir() {
   const qc = useQueryClient();
@@ -284,7 +272,6 @@ export default function Kasir() {
           )}
         </div>
       </div>
-    </div>
 
       {showQris && selectedOrder && (
         <QrisModal
@@ -297,5 +284,8 @@ export default function Kasir() {
           onClose={() => setShowQris(false)}
         />
       )}
+    </div>
   );
 }
+
+
