@@ -4,8 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-
-// Pages
+import { PersistentPlayer } from "@/components/layout/PersistentPlayer";
+import { PlayerProvider } from "@/hooks/use-player";
 import Home from "@/pages/home";
 import Menu from "@/pages/menu";
 import MenuDetail from "@/pages/menu-detail";
@@ -18,16 +18,13 @@ import AdminMenu from "@/pages/admin-menu";
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: {
-      retry: false,
-      refetchOnWindowFocus: false,
-    },
+    queries: { retry: false, refetchOnWindowFocus: false },
   },
 });
 
 function Router() {
   return (
-    <div className="min-h-[100dvh] flex flex-col selection:bg-primary selection:text-primary-foreground">
+    <div className="min-h-[100dvh] flex flex-col selection:bg-primary selection:text-primary-foreground pb-16">
       <Navbar />
       <main className="flex-1">
         <Switch>
@@ -43,6 +40,7 @@ function Router() {
         </Switch>
       </main>
       <Footer />
+      <PersistentPlayer />
     </div>
   );
 }
@@ -52,7 +50,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <Router />
+          <PlayerProvider>
+            <Router />
+          </PlayerProvider>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>
