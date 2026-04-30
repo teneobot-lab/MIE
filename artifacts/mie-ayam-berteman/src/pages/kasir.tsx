@@ -1,22 +1,20 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
-import { Receipt, ChefHat, CheckCircle, XCircle, Clock, Printer, RefreshCw } from "lucide-react";
+import { Receipt, ChefHat, CheckCircle, XCircle, Clock, Printer, RefreshCw, Bell, UtensilsCrossed, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { QrisModal } from "@/components/ui/qris-modal";
+import { useNewOrderNotification, requestNotificationPermission } from "@/hooks/use-notifications";
 
 type OrderItem = { id: number; name: string; quantity: number; price: number };
 type Payment = { id: number; method: string; status: string; amount: number; paidAt: string | null };
 type Order = {
-  id: number; handle: string; total: number; createdAt: string;
+  id: number; handle: string; total: number; createdAt: string; status: string;
   items: OrderItem[]; payment: Payment | null;
 };
 
-function formatRp(n: number) {
-  return `Rp ${n.toLocaleString("id-ID")}`;
-}
-
+function formatRp(n: number) { return `Rp ${n.toLocaleString("id-ID")}`; }
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 }
@@ -36,6 +34,18 @@ function StatusBadge({ payment }: { payment: Payment | null }) {
     <span className="flex items-center gap-1 text-xs font-mono bg-red-100 text-red-800 px-2 py-1 border border-red-400">
       <XCircle className="w-3 h-3" /> CANCEL
     </span>
+  );
+}
+
+function OrderStatusBadge({ status }: { status: string }) {
+  if (status === "pending") return (
+    <span className="text-xs font-mono bg-gray-100 text-gray-600 px-2 py-0.5 border border-gray-300">PENDING</span>
+  );
+  if (status === "cooking") return (
+    <span className="text-xs font-mono bg-orange-100 text-orange-700 px-2 py-0.5 border border-orange-300">🍳 DIMASAK</span>
+  );
+  return (
+    <span className="text-xs font-mono bg-green-100 text-green-700 px-2 py-0.5 border border-green-300">✅ SELESAI</span>
   );
 }
 
@@ -84,8 +94,7 @@ function ReceiptPreview({ order, type }: { order: Order; type: "customer" | "kit
         ))}
       </div>
       <div className="border-t-2 border-black pt-2 flex justify-between font-black">
-        <span>TOTAL</span>
-        <span>{formatRp(order.total)}</span>
+        <span>TOTAL</span><span>{formatRp(order.total)}</span>
       </div>
       {isPaid && (
         <div className="text-center mt-2 border-t border-dashed border-gray-400 pt-2">
@@ -108,7 +117,12 @@ export default function Kasir() {
   const [receiptType, setReceiptType] = useState<"customer" | "kitchen">("customer");
   const [filter, setFilter] = useState<"all" | "pending" | "paid">("all");
   const [showQris, setShowQris] = useState(false);
+  const [notifGranted, setNotifGranted] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    requestNotificationPermission().then(setNotifGranted);
+  }, []);
 
   const { data: orders = [], isLoading, refetch } = useQuery<Order[]>({
     queryKey: ["kasir-orders"],
@@ -116,11 +130,12 @@ export default function Kasir() {
     refetchInterval: 10000,
   });
 
+  useNewOrderNotification(orders);
+
   const payMutation = useMutation({
     mutationFn: ({ id, method }: { id: number; method: string }) =>
       customFetch(`/api/kasir/orders/${id}/pay`, {
-        method: "POST",
-        body: JSON.stringify({ method }),
+        method: "POST", body: JSON.stringify({ method }),
         headers: { "Content-Type": "application/json" },
       }),
     onSuccess: () => {
@@ -131,12 +146,25 @@ export default function Kasir() {
   });
 
   const cancelMutation = useMutation({
-    mutationFn: (id: number) =>
-      customFetch(`/api/kasir/orders/${id}/cancel`, { method: "POST" }),
+    mutationFn: (id: number) => customFetch(`/api/kasir/orders/${id}/cancel`, { method: "POST" }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["kasir-orders"] });
       toast({ title: "Order dibatalkan" });
       setSelectedOrder(null);
+    },
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: number; status: string }) =>
+      customFetch(`/api/kasir/orders/${id}/status`, {
+        method: "PATCH", body: JSON.stringify({ status }),
+        headers: { "Content-Type": "application/json" },
+      }),
+    onSuccess: (data: any) => {
+      qc.invalidateQueries({ queryKey: ["kasir-orders"] });
+      setSelectedOrder(prev => prev ? { ...prev, status: data.status } : null);
+      if (data.status === "done") toast({ title: "✅ Pesanan selesai!" });
+      else if (data.status === "cooking") toast({ title: "🍳 Pesanan sedang dimasak!" });
     },
   });
 
@@ -159,9 +187,15 @@ export default function Kasir() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
         <h1 className="text-2xl font-black uppercase tracking-tight">🧾 Kasir</h1>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          {!notifGranted && (
+            <button onClick={() => requestNotificationPermission().then(setNotifGranted)}
+              className="flex items-center gap-2 text-sm font-mono border-2 border-yellow-400 bg-yellow-50 px-3 py-1.5 hover:bg-yellow-100 transition-colors">
+              <Bell className="w-4 h-4" /> Aktifkan Notifikasi
+            </button>
+          )}
           <a href="/kasir/laporan" className="flex items-center gap-2 text-sm font-mono border-2 border-foreground px-3 py-1.5 hover:bg-secondary transition-colors">
             📊 Laporan
           </a>
@@ -171,7 +205,7 @@ export default function Kasir() {
         </div>
       </div>
 
-      <div className="flex gap-2 mb-6">
+      <div className="flex gap-2 mb-6 flex-wrap">
         {(["all", "pending", "paid"] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-3 py-1 text-xs font-mono uppercase border-2 transition-colors ${filter === f ? "bg-foreground text-background border-foreground" : "border-foreground hover:bg-secondary"}`}>
@@ -190,10 +224,11 @@ export default function Kasir() {
           ) : filtered.map(order => (
             <div key={order.id} onClick={() => setSelectedOrder(order)}
               className={`border-2 p-4 cursor-pointer transition-all hover:border-primary ${selectedOrder?.id === order.id ? "border-primary bg-primary/5" : "border-foreground"}`}>
-              <div className="flex items-start justify-between mb-2">
-                <div>
+              <div className="flex items-start justify-between mb-2 gap-2 flex-wrap">
+                <div className="flex items-center gap-2">
                   <span className="font-black text-lg">#{order.id}</span>
-                  <span className="font-mono text-sm text-muted-foreground ml-2">@{order.handle}</span>
+                  <span className="font-mono text-sm text-muted-foreground">@{order.handle}</span>
+                  <OrderStatusBadge status={order.status} />
                 </div>
                 <StatusBadge payment={order.payment} />
               </div>
@@ -211,7 +246,25 @@ export default function Kasir() {
         <div>
           {selectedOrder ? (
             <div className="border-2 border-foreground p-4 sticky top-4">
-              <h2 className="font-black text-lg mb-4 uppercase">Order #{selectedOrder.id}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-black text-lg uppercase">Order #{selectedOrder.id}</h2>
+                <OrderStatusBadge status={selectedOrder.status} />
+              </div>
+
+              {/* Status kitchen */}
+              <div className="flex gap-2 mb-4">
+                <button onClick={() => statusMutation.mutate({ id: selectedOrder.id, status: "cooking" })}
+                  disabled={selectedOrder.status === "cooking" || selectedOrder.status === "done"}
+                  className={`flex-1 flex items-center justify-center gap-1 text-xs py-2 border-2 font-mono transition-colors ${selectedOrder.status === "cooking" ? "bg-orange-500 text-white border-orange-500" : "border-orange-400 text-orange-600 hover:bg-orange-50"} disabled:opacity-50`}>
+                  <UtensilsCrossed className="w-3 h-3" /> Mulai Masak
+                </button>
+                <button onClick={() => statusMutation.mutate({ id: selectedOrder.id, status: "done" })}
+                  disabled={selectedOrder.status === "done"}
+                  className={`flex-1 flex items-center justify-center gap-1 text-xs py-2 border-2 font-mono transition-colors ${selectedOrder.status === "done" ? "bg-green-500 text-white border-green-500" : "border-green-400 text-green-600 hover:bg-green-50"} disabled:opacity-50`}>
+                  <CheckCheck className="w-3 h-3" /> Selesai
+                </button>
+              </div>
+
               <div className="flex gap-2 mb-4">
                 <button onClick={() => setReceiptType("customer")}
                   className={`flex items-center gap-1 text-xs px-3 py-1.5 border-2 font-mono transition-colors ${receiptType === "customer" ? "bg-foreground text-background border-foreground" : "border-foreground"}`}>
@@ -222,9 +275,11 @@ export default function Kasir() {
                   <ChefHat className="w-3 h-3" /> Kitchen
                 </button>
               </div>
+
               <div ref={printRef} className="mb-4 overflow-auto">
                 <ReceiptPreview order={selectedOrder} type={receiptType} />
               </div>
+
               <div className="space-y-2">
                 <Button onClick={handlePrint} variant="outline" className="w-full gap-2">
                   <Printer className="w-4 h-4" /> Print Struk

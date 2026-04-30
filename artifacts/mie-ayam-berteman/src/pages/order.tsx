@@ -7,6 +7,7 @@ import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
 import { QrisModal } from "@/components/ui/qris-modal";
+import { useOrderStatus, requestNotificationPermission } from "@/hooks/use-notifications";
 import { Trash2, Music, Check, ArrowRight } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -44,6 +45,13 @@ export default function Order() {
   const [lastTotal, setLastTotal] = useState<number>(0);
   const [showQris, setShowQris] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
+  const [orderDone, setOrderDone] = useState(false);
+
+  useOrderStatus(lastOrderId, () => setOrderDone(true));
+
+  useEffect(() => {
+    if (isSuccess) requestNotificationPermission();
+  }, [isSuccess]);
 
   const createOrderMutation = useCreateOrder();
 
@@ -137,7 +145,14 @@ export default function Order() {
             </div>
           </div>
 
-          {!paymentDone ? (
+          {orderDone && (
+            <div className="zine-border bg-green-100 border-green-500 p-6 text-center animate-pulse">
+              <p className="font-black text-2xl text-green-700 uppercase">✅ Pesanan Siap!</p>
+              <p className="font-mono text-sm text-green-600 mt-2">Silakan ambil pesanan kamu di kasir.</p>
+            </div>
+          )}
+
+          {!orderDone && !paymentDone ? (
             <div className="zine-border bg-card p-6 text-center">
               <h2 className="font-bold uppercase tracking-widest mb-4">Pilih Metode Pembayaran</h2>
               <div className="flex gap-3 justify-center flex-wrap">

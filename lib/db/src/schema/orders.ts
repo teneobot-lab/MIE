@@ -14,6 +14,7 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),
+  status: text("status").notNull().default("pending"),
 });
 
 export const orderItems = pgTable("order_items", {

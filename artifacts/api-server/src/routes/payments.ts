@@ -73,3 +73,19 @@ router.post("/kasir/orders/:id/cancel", async (req, res): Promise<void> => {
 });
 
 export default router;
+
+// UPDATE status order (pending -> cooking -> done)
+router.patch("/kasir/orders/:id/status", async (req, res): Promise<void> => {
+  const id = Number(req.params.id);
+  const { status } = req.body;
+  if (!["pending", "cooking", "done"].includes(status)) {
+    res.status(400).json({ message: "Status tidak valid" });
+    return;
+  }
+  const [updated] = await db.update(orders)
+    .set({ status })
+    .where(eq(orders.id, id))
+    .returning();
+  if (!updated) { res.status(404).json({ message: "Order not found" }); return; }
+  res.json(updated);
+});
