@@ -69,18 +69,21 @@ router.post("/orders", async (req, res): Promise<void> => {
       .returning();
 
     const { weekStart } = getWeekRange();
-    const [reqRow] = await tx
-      .insert(songRequests)
-      .values({
-        orderId: order.id,
-        title: songRequest.title.trim(),
-        artist: songRequest.artist.trim(),
-        message: songRequest.message?.trim() || null,
-        requesterHandle: handle,
-        weekStart,
-      })
-      .returning();
+    let reqRow = null;
+    if (songRequest && songRequest.title && songRequest.artist) {
+      [reqRow] = await tx
+        .insert(songRequests)
+        .values({
+          orderId: order.id,
+          title: songRequest.title.trim(),
+          artist: songRequest.artist.trim(),
+          message: songRequest.message?.trim() || null,
+          requesterHandle: handle,
+          weekStart,
+        })
+        .returning();
 
+    }
     return { order, items: insertedItems, songRequest: reqRow };
   });
 
