@@ -6,6 +6,7 @@ import songsRouter from "./songs";
 import statsRouter from "./stats";
 import adminMenuRouter from "./admin-menu";
 import profilesRouter from "./profiles";
+import paymentsRouter from "./payments";
 
 const router: IRouter = Router();
 
@@ -16,5 +17,6 @@ router.use(songsRouter);
 router.use(statsRouter);
 router.use(adminMenuRouter);
 router.use(profilesRouter);
+router.use(paymentsRouter);
 
 export default router;
