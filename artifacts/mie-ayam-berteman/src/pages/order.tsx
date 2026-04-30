@@ -175,6 +175,18 @@ export default function Order() {
           </div>
         </div>
       </PageTransition>
+
+      {showQris && lastOrderId && (
+        <QrisModal
+          orderId={lastOrderId}
+          amount={lastTotal}
+          onConfirm={() => {
+            setShowQris(false);
+            setPaymentDone(true);
+          }}
+          onClose={() => setShowQris(false)}
+        />
+      )}
     );
   }
 
