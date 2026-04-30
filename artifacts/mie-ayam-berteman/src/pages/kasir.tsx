@@ -169,6 +169,9 @@ export default function Kasir() {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-black uppercase tracking-tight">🧾 Kasir</h1>
+        <a href="/kasir/laporan" className="flex items-center gap-2 text-sm font-mono border-2 border-foreground px-3 py-1.5 hover:bg-secondary transition-colors">
+          📊 Laporan
+        </a>
         <button onClick={() => refetch()} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <RefreshCw className="w-4 h-4" /> Refresh
         </button>

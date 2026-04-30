@@ -16,6 +16,7 @@ import Friends from "@/pages/friends";
 import NotFound from "@/pages/not-found";
 import AdminMenu from "@/pages/admin-menu";
 import Kasir from "@/pages/kasir";
+import Laporan from "@/pages/laporan";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +39,7 @@ function Router() {
           <Route path="/friends" component={Friends} />
           <Route path="/admin/menu" component={AdminMenu} />
           <Route path="/kasir" component={Kasir} />
+          <Route path="/kasir/laporan" component={Laporan} />
           <Route component={NotFound} />
         </Switch>
       </main>
