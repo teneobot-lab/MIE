@@ -29,7 +29,12 @@ app.use(
 );
 const corsOriginEnv = process.env["CORS_ORIGIN"];
 const corsOrigins = corsOriginEnv
-  ? corsOriginEnv.split(",").map((s) => s.trim()).filter(Boolean)
+  ? (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+      const allowed = corsOriginEnv.split(',').map((s) => s.trim()).filter(Boolean);
+      const isAllowed = allowed.some((a) => origin === a) ||
+        /^https:\/\/mie-api-server-xw4r[a-z0-9-]*\.vercel\.app$/.test(origin);
+      callback(null, isAllowed);
+    }
   : true;
 app.use(cors({ origin: corsOrigins, credentials: true }));
 app.use(express.json());
