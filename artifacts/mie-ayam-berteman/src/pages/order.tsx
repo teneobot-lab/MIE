@@ -6,6 +6,7 @@ import { PageTransition } from "@/components/layout/PageTransition";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
+import { QrisModal } from "@/components/ui/qris-modal";
 import { Trash2, Music, Check, ArrowRight } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -24,8 +25,8 @@ import { Textarea } from "@/components/ui/textarea";
 
 const orderSchema = z.object({
   handle: z.string().min(2, "Nama minimal 2 huruf coy"),
-  songTitle: z.string().min(1, "Judul lagu wajib diisi"),
-  songArtist: z.string().min(1, "Artis/Band wajib diisi"),
+  songTitle: z.string().optional(),
+  songArtist: z.string().optional(),
   message: z.string().max(100, "Kepanjangan, maksimal 100 karakter").optional(),
 });
 
@@ -39,6 +40,10 @@ export default function Order() {
   
   const [isSuccess, setIsSuccess] = useState(false);
   const [lastRank, setLastRank] = useState<number | null>(null);
+  const [lastOrderId, setLastOrderId] = useState<number | null>(null);
+  const [lastTotal, setLastTotal] = useState<number>(0);
+  const [showQris, setShowQris] = useState(false);
+  const [paymentDone, setPaymentDone] = useState(false);
 
   const createOrderMutation = useCreateOrder();
 
@@ -72,11 +77,11 @@ export default function Order() {
             menuItemId: item.menuItem.id,
             quantity: item.quantity
           })),
-          songRequest: {
+          songRequest: data.songTitle && data.songArtist ? {
             title: data.songTitle,
             artist: data.songArtist,
             message: data.message || undefined
-          }
+          } : undefined
         }
       });
 
@@ -85,7 +90,9 @@ export default function Order() {
       queryClient.invalidateQueries({ queryKey: [`/api/songs/leaderboard`] });
       queryClient.invalidateQueries({ queryKey: [`/api/songs/now-playing`] });
 
-      setLastRank(response.songRequest.score); // Not exact rank but gives feedback
+      setLastRank(response.songRequest?.score ?? 0);
+      setLastOrderId(response.id);
+      setLastTotal(response.total); // Not exact rank but gives feedback
       setIsSuccess(true);
       clearCart();
       window.scrollTo(0, 0);
@@ -130,6 +137,34 @@ export default function Order() {
             </div>
           </div>
 
+          {!paymentDone ? (
+            <div className="zine-border bg-card p-6 text-center">
+              <h2 className="font-bold uppercase tracking-widest mb-4">Pilih Metode Pembayaran</h2>
+              <div className="flex gap-3 justify-center flex-wrap">
+                <button
+                  onClick={() => {
+                    setPaymentDone(true);
+                  }}
+                  className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white font-bold uppercase border-2 border-green-700 hover:bg-green-700 transition-colors"
+                >
+                  💵 Bayar Cash ke Kasir
+                </button>
+                <button
+                  onClick={() => setShowQris(true)}
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold uppercase border-2 border-blue-700 hover:bg-blue-700 transition-colors"
+                >
+                  📱 Bayar QRIS Mandiri
+                </button>
+              </div>
+              <p className="text-xs font-mono text-muted-foreground mt-3">
+                Bayar cash = konfirmasi di kasir. Bayar QRIS = scan sekarang.
+              </p>
+            </div>
+          ) : (
+            <div className="zine-border bg-green-50 border-green-400 p-4 text-center">
+              <p className="font-bold text-green-700 uppercase">✓ Pembayaran Dikonfirmasi!</p>
+            </div>
+          )}
           <div className="flex gap-4 justify-center pt-8">
             <Link href="/leaderboard" className="zine-border bg-primary text-primary-foreground font-bold uppercase px-6 py-3 flex items-center gap-2 hover:bg-foreground hover:text-background transition-colors">
               <Music className="w-4 h-4" /> Lihat Chart
@@ -306,6 +341,18 @@ export default function Order() {
           </div>
         </div>
       </div>
+
+      {showQris && lastOrderId && (
+        <QrisModal
+          orderId={lastOrderId}
+          amount={lastTotal}
+          onConfirm={() => {
+            setShowQris(false);
+            setPaymentDone(true);
+          }}
+          onClose={() => setShowQris(false)}
+        />
+      )}
     </PageTransition>
   );
 }
