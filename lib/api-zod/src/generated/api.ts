@@ -69,7 +69,7 @@ export const CreateOrderBody = zod.object({
     title: zod.string().min(1),
     artist: zod.string().min(1),
     message: zod.string().nullish(),
-  }),
+  }).optional(),
 });
 
 /**

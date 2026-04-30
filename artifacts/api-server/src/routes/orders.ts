@@ -96,7 +96,7 @@ router.post("/orders", async (req, res): Promise<void> => {
       quantity: i.quantity,
       price: i.price,
     })),
-    songRequest: {
+    songRequest: result.songRequest ? {
       id: result.songRequest.id,
       title: result.songRequest.title,
       artist: result.songRequest.artist,
@@ -106,7 +106,7 @@ router.post("/orders", async (req, res): Promise<void> => {
       requests: 1,
       score: 1,
       createdAt: result.songRequest.createdAt.toISOString(),
-    },
+    } : null,
   });
 });
 
