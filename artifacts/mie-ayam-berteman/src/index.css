@@ -221,3 +221,89 @@
   margin-left: -40px;
   z-index: 10;
 }
+
+/* === UI POLISH === */
+* {
+  scroll-behavior: smooth;
+}
+
+/* Smooth page transitions */
+.page-fade-in {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Better focus states */
+button:focus-visible, a:focus-visible {
+  outline: 3px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Skeleton loading shimmer */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, hsl(var(--secondary)) 25%, hsl(var(--muted)) 50%, hsl(var(--secondary)) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Smooth cart badge */
+.cart-badge {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cart-badge:hover {
+  transform: scale(1.1) rotate(12deg);
+}
+
+/* Better tap targets mobile */
+@media (max-width: 768px) {
+  button, a {
+    min-height: 44px;
+  }
+}
+
+/* Floating label animation */
+.float-label {
+  transition: all 0.2s ease;
+}
+
+/* Pulse for live indicators */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.live-dot {
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+/* Smooth status badges */
+.status-badge {
+  transition: all 0.3s ease;
+}
+
+/* Better scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: hsl(var(--secondary)); }
+::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground)); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--foreground)); }
+
+/* Smooth image load */
+img {
+  transition: opacity 0.3s ease;
+}
+
+/* Toast improvements */
+.toast-enter {
+  animation: slideInRight 0.3s ease-out;
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

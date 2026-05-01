@@ -15,58 +15,64 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b-4 border-foreground bg-background/90 backdrop-blur-sm">
+    <header className="sticky top-0 z-50 w-full border-b-4 border-foreground bg-background/95 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="font-display font-black text-2xl tracking-tighter uppercase transform -rotate-2 hover:rotate-0 transition-transform">
+        {/* Logo */}
+        <Link href="/" className="font-display font-black text-2xl tracking-tighter uppercase transform -rotate-2 hover:rotate-0 transition-all duration-200 select-none">
           <span className="bg-primary text-primary-foreground px-2 py-1 border-2 border-foreground">MIE AYAM</span>
-          <span className="ml-1 text-foreground mix-blend-difference">BERTEMAN</span>
+          <span className="ml-1 text-foreground">BERTEMAN</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "font-bold uppercase tracking-widest text-sm flex items-center gap-2 hover:text-primary transition-colors",
-                location === item.href ? "text-primary decoration-primary underline decoration-2 underline-offset-4" : "text-muted-foreground"
-              )}
-            >
-              <item.icon className="w-4 h-4" />
-              {item.label}
-            </Link>
-          ))}
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navItems.map((item) => {
+            const isActive = location === item.href;
+            return (
+              <Link key={item.href} href={item.href}
+                className={cn(
+                  "relative font-bold uppercase tracking-widest text-sm flex items-center gap-2 px-3 py-2 transition-all duration-200 hover:text-primary",
+                  isActive ? "text-primary" : "text-muted-foreground"
+                )}>
+                <item.icon className="w-4 h-4" />
+                {item.label}
+                {isActive && (
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="flex items-center gap-4">
-          <Link href="/order" className="relative zine-border bg-accent text-accent-foreground px-4 py-2 font-bold uppercase tracking-wider text-sm flex items-center gap-2 group">
-            <ShoppingCart className="w-4 h-4 group-hover:-rotate-12 transition-transform" />
-            <span className="hidden sm:inline">Cart</span>
-            {itemCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-foreground transform rotate-12">
-                {itemCount}
-              </span>
-            )}
-          </Link>
-        </div>
+        {/* Cart Button */}
+        <Link href="/order"
+          className="relative zine-border bg-accent text-accent-foreground px-4 py-2 font-bold uppercase tracking-wider text-sm flex items-center gap-2 group hover:bg-primary hover:text-primary-foreground transition-all duration-200 active:scale-95">
+          <ShoppingCart className="w-4 h-4 group-hover:-rotate-12 transition-transform duration-200" />
+          <span className="hidden sm:inline">Cart</span>
+          {itemCount > 0 && (
+            <span className="cart-badge absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center border-2 border-foreground">
+              {itemCount}
+            </span>
+          )}
+        </Link>
       </div>
-      
+
       {/* Mobile Nav */}
-      <div className="md:hidden border-t-2 border-foreground bg-background flex justify-around p-2">
-         {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
+      <nav className="md:hidden border-t-2 border-foreground bg-background flex justify-around py-1">
+        {navItems.map((item) => {
+          const isActive = location === item.href;
+          return (
+            <Link key={item.href} href={item.href}
               className={cn(
-                "p-2 flex flex-col items-center justify-center gap-1 text-[10px] uppercase font-bold",
-                location === item.href ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              <item.icon className="w-5 h-5" />
+                "flex flex-col items-center justify-center gap-0.5 px-3 py-2 text-[10px] uppercase font-bold transition-all duration-200 min-w-[56px]",
+                isActive ? "text-primary" : "text-muted-foreground"
+              )}>
+              <item.icon className={cn("w-5 h-5 transition-transform duration-200", isActive && "scale-110")} />
               {item.label}
+              {isActive && <span className="w-1 h-1 rounded-full bg-primary" />}
             </Link>
-          ))}
-      </div>
+          );
+        })}
+      </nav>
     </header>
   );
 }
