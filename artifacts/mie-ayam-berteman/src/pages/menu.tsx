@@ -35,6 +35,7 @@ export default function Menu() {
   const categories = [
     { label: "Semua", value: undefined },
     { label: "Makanan", value: "makanan" },
+    { label: "Mie", value: "mie" },
     { label: "Minuman", value: "minuman" },
     { label: "Ekstra", value: "ekstra" },
   ];
