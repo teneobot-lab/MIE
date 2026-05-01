@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useRef, useEffect } from "react";
 import { useGetNowPlaying } from "@workspace/api-client-react";
 
 type Song = {
@@ -13,16 +13,26 @@ type PlayerContextType = {
   currentSong: Song | null;
   queue: Song[];
   videoId: string | null;
-  isVisible: boolean;
-  setIsVisible: (v: boolean) => void;
+  currentIndex: number;
+  isPlaying: boolean;
+  setIsPlaying: (v: boolean) => void;
+  playNext: () => void;
+  playPrev: () => void;
+  playAt: (index: number) => void;
+  allSongs: Song[];
 };
 
 const PlayerContext = createContext<PlayerContextType>({
   currentSong: null,
   queue: [],
   videoId: null,
-  isVisible: false,
-  setIsVisible: () => {},
+  currentIndex: 0,
+  isPlaying: false,
+  setIsPlaying: () => {},
+  playNext: () => {},
+  playPrev: () => {},
+  playAt: () => {},
+  allSongs: [],
 });
 
 async function searchYouTube(title: string, artist: string): Promise<string | null> {
@@ -39,8 +49,19 @@ async function searchYouTube(title: string, artist: string): Promise<string | nu
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const { data, refetch } = useGetNowPlaying();
   const [videoId, setVideoId] = useState<string | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const currentSongRef = useRef<string>("");
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const currentKeyRef = useRef<string>("");
+
+  // Gabungkan nowplaying + queue jadi satu list
+  const allSongs: Song[] = data
+    ? [
+        ...(data.song ? [data.song] : []),
+        ...(data.queue ?? []),
+      ]
+    : [];
+
+  const currentSong = allSongs[currentIndex] ?? null;
 
   useEffect(() => {
     const interval = setInterval(() => refetch(), 15000);
@@ -48,20 +69,44 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, [refetch]);
 
   useEffect(() => {
-    if (!data?.song) return;
-    const key = `${data.song.title}||${data.song.artist}`;
-    if (key === currentSongRef.current) return;
-    currentSongRef.current = key;
-    searchYouTube(data.song.title, data.song.artist).then(setVideoId);
-  }, [data?.song]);
+    if (!currentSong) return;
+    const key = `${currentSong.title}||${currentSong.artist}`;
+    if (key === currentKeyRef.current) return;
+    currentKeyRef.current = key;
+    searchYouTube(currentSong.title, currentSong.artist).then(vid => {
+      setVideoId(vid);
+      setIsPlaying(true);
+    });
+  }, [currentSong?.title, currentSong?.artist]);
+
+  const playNext = () => {
+    if (allSongs.length === 0) return;
+    setCurrentIndex(i => (i + 1) % allSongs.length);
+  };
+
+  const playPrev = () => {
+    if (allSongs.length === 0) return;
+    setCurrentIndex(i => (i - 1 + allSongs.length) % allSongs.length);
+  };
+
+  const playAt = (index: number) => {
+    if (index < 0 || index >= allSongs.length) return;
+    setCurrentIndex(index);
+    currentKeyRef.current = ""; // force refresh
+  };
 
   return (
     <PlayerContext.Provider value={{
-      currentSong: data?.song ?? null,
+      currentSong,
       queue: data?.queue ?? [],
       videoId,
-      isVisible,
-      setIsVisible,
+      currentIndex,
+      isPlaying,
+      setIsPlaying,
+      playNext,
+      playPrev,
+      playAt,
+      allSongs,
     }}>
       {children}
     </PlayerContext.Provider>
