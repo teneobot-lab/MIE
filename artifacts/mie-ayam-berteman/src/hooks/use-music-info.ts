@@ -30,12 +30,12 @@ export function useLyrics(title: string | null, artist: string | null): LyricsRe
     const encodedArtist = encodeURIComponent(artist);
     const encodedTitle = encodeURIComponent(title);
 
-    fetch(`https://api.lyrics.ovh/v1/${encodedArtist}/${encodedTitle}`)
+    fetch(`https://lrclib.net/api/get?artist_name=${encodedArtist}&track_name=${encodedTitle}`)
       .then(r => r.json())
       .then(data => {
-        if (data.lyrics) {
-          setLyrics(data.lyrics);
-          setSource("lyrics.ovh");
+        if (data.plainLyrics) {
+          setLyrics(data.plainLyrics);
+          setSource("lrclib.net");
         } else {
           setError("Lirik tidak ditemukan");
         }
