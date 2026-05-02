@@ -74,7 +74,31 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (key === currentKeyRef.current) return;
     currentKeyRef.current = key;
     searchYouTube(currentSong.title, currentSong.artist).then(vid => {
-      setVideoId(vid);
+      if (vid && typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        const openers = [
+          `Oi oi! Selanjutnya kita putar`,
+          `Yo! Request masuk nih,`,
+          `Gaskeun! Berikutnya ada`,
+          `Hei hei! Siap-siap dengerin`,
+        ];
+        const closers = [
+          `request dari ${currentSong.requesterHandle}! Let's go!`,
+          `dipesen sama ${currentSong.requesterHandle}! Cus!`,
+          `buat ${currentSong.requesterHandle}! Gaspol!`,
+          `dari ${currentSong.requesterHandle}! Hayuk!`,
+        ];
+        const text = `${openers[Math.floor(Math.random() * openers.length)]} ${currentSong.title} dari ${currentSong.artist}, ${closers[Math.floor(Math.random() * closers.length)]}`;
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'id-ID';
+        utter.rate = 1.15;
+        utter.pitch = 1.1;
+        utter.onend = () => setVideoId(vid);
+        utter.onerror = () => setVideoId(vid);
+        window.speechSynthesis.speak(utter);
+      } else {
+        setVideoId(vid);
+      }
       setIsPlaying(true);
     });
   }, [currentSong?.title, currentSong?.artist]);

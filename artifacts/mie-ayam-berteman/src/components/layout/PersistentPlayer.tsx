@@ -16,6 +16,34 @@ export function PersistentPlayer() {
   const [dismissed, setDismissed] = useState(false);
   const [bars, setBars] = useState<number[]>(Array.from({ length: 16 }, () => 20));
   const currentVideoRef = useRef<string>("");
+  const announcingRef = useRef(false);
+
+  const announceAndPlay = (song: { title: string; artist: string; requesterHandle: string }, vid: string) => {
+    window.speechSynthesis.cancel();
+    announcingRef.current = true;
+
+    const openers = [
+      `Oi oi oi! Selanjutnya kita putar`,
+      `Yo! Request masuk nih,`,
+      `Gaskeun! Berikutnya ada`,
+      `Hei hei! Siap-siap dengerin`,
+    ];
+    const closers = [
+      `request dari ${song.requesterHandle}! Let's go!`,
+    ];
+    const opener = openers[Math.floor(Math.random() * openers.length)];
+    const closer = closers[Math.floor(Math.random() * closers.length)];
+    const text = `${opener} ${song.title} dari ${song.artist}, ${closer}`;
+
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'id-ID';
+    utter.rate = 1.15;
+    utter.pitch = 1.1;
+    utter.volume = 1;
+    utter.onend = () => { announcingRef.current = false; setVideoId(vid); };
+    utter.onerror = () => { announcingRef.current = false; setVideoId(vid); };
+    window.speechSynthesis.speak(utter);
+  };
 
   // Load YouTube API
   useEffect(() => {
