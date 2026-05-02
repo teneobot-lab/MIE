@@ -100,9 +100,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           utter.pitch = 1.1;
           window.speechSynthesis.speak(utter);
         }
-      } else {
-        setVideoId(vid);
       }
+      setVideoId(vid);
       setIsPlaying(true);
     });
   }, [currentSong?.title, currentSong?.artist]);
