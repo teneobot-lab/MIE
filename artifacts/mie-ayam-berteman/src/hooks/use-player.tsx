@@ -74,6 +74,10 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (key === currentKeyRef.current) return;
     currentKeyRef.current = key;
     searchYouTube(currentSong.title, currentSong.artist).then(vid => {
+      const startMusic = () => {
+        setVideoId(vid);
+        setIsPlaying(true);
+      };
       if (vid && typeof window !== 'undefined' && window.speechSynthesis) {
         window.speechSynthesis.cancel();
         const openers = [
@@ -92,17 +96,19 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         if ((window as any).responsiveVoice) {
           (window as any).responsiveVoice.speak(text, "Indonesian Female", {
             rate: 1.1, pitch: 1, volume: 1,
+            onend: startMusic,
           });
         } else {
           const utter = new SpeechSynthesisUtterance(text);
           utter.lang = 'id-ID';
           utter.rate = 1.15;
           utter.pitch = 1.1;
+          utter.onend = startMusic;
           window.speechSynthesis.speak(utter);
         }
+      } else {
+        startMusic();
       }
-      setVideoId(vid);
-      setIsPlaying(true);
     });
   }, [currentSong?.title, currentSong?.artist]);
 
