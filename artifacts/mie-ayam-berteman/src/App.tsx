@@ -19,6 +19,7 @@ import Kasir from "@/pages/kasir";
 import Laporan from "@/pages/laporan";
 import Stok from "@/pages/stok";
 import AdminVoucher from "@/pages/admin-voucher";
+import Dashboard from "@/pages/dashboard";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,7 @@ function Router() {
           <Route path="/kasir/laporan" component={Laporan} />
           <Route path="/kasir/stok" component={Stok} />
           <Route path="/admin/voucher" component={AdminVoucher} />
+          <Route path="/dashboard" component={Dashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>

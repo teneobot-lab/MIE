@@ -7,11 +7,22 @@ export function Navbar() {
   const [location] = useLocation();
   const itemCount = useCart((state) => state.getItemCount());
 
+  const isAdmin = location.startsWith("/kasir") || location.startsWith("/admin") || location === "/dashboard";
+
   const navItems = [
     { href: "/", label: "Home", icon: Home },
     { href: "/menu", label: "Menu", icon: MenuIcon },
     { href: "/leaderboard", label: "Chart", icon: Music },
     { href: "/friends", label: "Teman", icon: Users },
+  ];
+
+  const adminItems = [
+    { href: "/dashboard", label: "Dashboard" },
+    { href: "/kasir", label: "Kasir" },
+    { href: "/admin/menu", label: "Menu" },
+    { href: "/kasir/stok", label: "Stok" },
+    { href: "/admin/voucher", label: "Voucher" },
+    { href: "/kasir/laporan", label: "Laporan" },
   ];
 
   return (
@@ -55,6 +66,21 @@ export function Navbar() {
           )}
         </Link>
       </div>
+
+      {/* Admin Nav Bar */}
+      {isAdmin && (
+        <div className="border-t-2 border-primary bg-foreground flex overflow-x-auto">
+          {adminItems.map(item => (
+            <Link key={item.href} href={item.href}
+              className={cn(
+                "px-4 py-2 text-xs font-mono uppercase font-bold whitespace-nowrap transition-colors",
+                location === item.href ? "bg-primary text-primary-foreground" : "text-background hover:bg-primary/20"
+              )}>
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      )}
 
       {/* Mobile Nav */}
       <nav className="md:hidden border-t-2 border-foreground bg-background flex justify-around py-1">
