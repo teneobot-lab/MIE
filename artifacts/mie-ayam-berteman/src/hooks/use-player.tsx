@@ -78,37 +78,47 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         setVideoId(vid);
         setIsPlaying(true);
       };
-      if (vid && typeof window !== 'undefined' && window.speechSynthesis) {
+      const openers = [
+        `Oi oi! Selanjutnya kita putar`,
+        `Yo! Request masuk nih,`,
+        `Gaskeun! Berikutnya ada`,
+        `Hei hei! Siap-siap dengerin`,
+      ];
+      const closers = [
+        `request dari ${currentSong.requesterHandle}! Let's go!`,
+        `dipesen sama ${currentSong.requesterHandle}! Cus!`,
+        `buat ${currentSong.requesterHandle}! Gaspol!`,
+        `dari ${currentSong.requesterHandle}! Hayuk!`,
+      ];
+      const text = `${openers[Math.floor(Math.random() * openers.length)]} ${currentSong.title} dari ${currentSong.artist}, ${closers[Math.floor(Math.random() * closers.length)]}`;
+      const trySpeech = () => {
+        if (typeof window === 'undefined' || !window.speechSynthesis) {
+          startMusic();
+          return;
+        }
         window.speechSynthesis.cancel();
-        const openers = [
-          `Oi oi! Selanjutnya kita putar`,
-          `Yo! Request masuk nih,`,
-          `Gaskeun! Berikutnya ada`,
-          `Hei hei! Siap-siap dengerin`,
-        ];
-        const closers = [
-          `request dari ${currentSong.requesterHandle}! Let's go!`,
-          `dipesen sama ${currentSong.requesterHandle}! Cus!`,
-          `buat ${currentSong.requesterHandle}! Gaspol!`,
-          `dari ${currentSong.requesterHandle}! Hayuk!`,
-        ];
-        const text = `${openers[Math.floor(Math.random() * openers.length)]} ${currentSong.title} dari ${currentSong.artist}, ${closers[Math.floor(Math.random() * closers.length)]}`;
-        if ((window as any).responsiveVoice) {
-          (window as any).responsiveVoice.speak(text, "Indonesian Female", {
-            rate: 1.1, pitch: 1, volume: 1,
-            onend: startMusic,
-          });
-        } else {
+        // Small delay to let cancel() flush
+        setTimeout(() => {
           const utter = new SpeechSynthesisUtterance(text);
           utter.lang = 'id-ID';
           utter.rate = 1.15;
           utter.pitch = 1.1;
+          utter.volume = 1;
+          let started = false;
+          utter.onstart = () => { started = true; };
           utter.onend = startMusic;
+          utter.onerror = startMusic;
           window.speechSynthesis.speak(utter);
-        }
-      } else {
-        startMusic();
-      }
+          // Fallback: jika 4 detik speech belum mulai, langsung startMusic
+          setTimeout(() => {
+            if (!started) {
+              window.speechSynthesis.cancel();
+              startMusic();
+            }
+          }, 4000);
+        }, 150);
+      };
+      trySpeech();
     });
   }, [currentSong?.title, currentSong?.artist]);
 
