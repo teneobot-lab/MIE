@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { customFetch } from "@workspace/api-client-react";
-import { TrendingUp, ShoppingBag, XCircle, CreditCard, Banknote, BarChart3, Trophy, Clock } from "lucide-react";
+import { TrendingUp, ShoppingBag, XCircle, CreditCard, Banknote, BarChart3, Trophy, Clock, FileSpreadsheet, FileText } from "lucide-react";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 type LaporanData = {
   from: string;
@@ -16,6 +19,113 @@ type LaporanData = {
 
 function formatRp(n: number) {
   return `Rp ${n.toLocaleString("id-ID")}`;
+}
+
+
+function exportToExcel(data: LaporanData) {
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1: Ringkasan
+  const summary = [
+    ["LAPORAN PENJUALAN MIE AYAM BERTEMAN"],
+    ["Periode", `${new Date(data.from).toLocaleDateString("id-ID")} - ${new Date(data.to).toLocaleDateString("id-ID")}`],
+    [],
+    ["Total Pendapatan", data.totalRevenue],
+    ["Total Order Lunas", data.totalOrders],
+    ["Order Dibatalkan", data.cancelledOrders],
+    ["Rata-rata per Order", data.totalOrders > 0 ? Math.round(data.totalRevenue / data.totalOrders) : 0],
+    [],
+    ["BREAKDOWN METODE BAYAR"],
+    ["Metode", "Jumlah Transaksi", "Total"],
+    ...data.methodBreakdown.map(m => [m.method.toUpperCase(), m.count, m.total]),
+  ];
+  const ws1 = XLSX.utils.aoa_to_sheet(summary);
+  XLSX.utils.book_append_sheet(wb, ws1, "Ringkasan");
+
+  // Sheet 2: Menu Terlaris
+  const menuData = [
+    ["MENU TERLARIS"],
+    ["No", "Nama Menu", "Qty Terjual", "Total Pendapatan"],
+    ...data.topMenu.map((m, i) => [i + 1, m.name, m.qty, m.revenue]),
+  ];
+  const ws2 = XLSX.utils.aoa_to_sheet(menuData);
+  XLSX.utils.book_append_sheet(wb, ws2, "Menu Terlaris");
+
+  // Sheet 3: Per Jam
+  const jamData = [
+    ["TRANSAKSI PER JAM"],
+    ["Jam", "Jumlah Order", "Total Pendapatan"],
+    ...data.perJam.map(j => [`${String(j.jam).padStart(2,"0")}:00`, j.count, j.total]),
+  ];
+  const ws3 = XLSX.utils.aoa_to_sheet(jamData);
+  XLSX.utils.book_append_sheet(wb, ws3, "Per Jam");
+
+  XLSX.writeFile(wb, `laporan-mab-${new Date().toISOString().split("T")[0]}.xlsx`);
+}
+
+function exportToPDF(data: LaporanData) {
+  const doc = new jsPDF();
+  const dateStr = `${new Date(data.from).toLocaleDateString("id-ID")} - ${new Date(data.to).toLocaleDateString("id-ID")}`;
+
+  // Header
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("LAPORAN PENJUALAN", 105, 20, { align: "center" });
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "normal");
+  doc.text("MIE AYAM BERTEMAN", 105, 28, { align: "center" });
+  doc.setFontSize(10);
+  doc.text(`Periode: ${dateStr}`, 105, 36, { align: "center" });
+
+  // Summary
+  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.text("RINGKASAN", 14, 50);
+
+  autoTable(doc, {
+    startY: 54,
+    head: [["Keterangan", "Nilai"]],
+    body: [
+      ["Total Pendapatan", `Rp ${data.totalRevenue.toLocaleString("id-ID")}`],
+      ["Total Order Lunas", String(data.totalOrders)],
+      ["Order Dibatalkan", String(data.cancelledOrders)],
+      ["Rata-rata per Order", `Rp ${data.totalOrders > 0 ? Math.round(data.totalRevenue / data.totalOrders).toLocaleString("id-ID") : 0}`],
+    ],
+    theme: "striped",
+    headStyles: { fillColor: [220, 0, 100] },
+  });
+
+  // Menu terlaris
+  const afterSummary = (doc as any).lastAutoTable.finalY + 10;
+  doc.setFont("helvetica", "bold");
+  doc.text("MENU TERLARIS", 14, afterSummary);
+
+  autoTable(doc, {
+    startY: afterSummary + 4,
+    head: [["No", "Menu", "Qty", "Pendapatan"]],
+    body: data.topMenu.map((m, i) => [
+      i + 1, m.name, m.qty, `Rp ${m.revenue.toLocaleString("id-ID")}`
+    ]),
+    theme: "striped",
+    headStyles: { fillColor: [220, 0, 100] },
+  });
+
+  // Per jam
+  const afterMenu = (doc as any).lastAutoTable.finalY + 10;
+  doc.setFont("helvetica", "bold");
+  doc.text("TRANSAKSI PER JAM", 14, afterMenu);
+
+  autoTable(doc, {
+    startY: afterMenu + 4,
+    head: [["Jam", "Jumlah Order", "Total"]],
+    body: data.perJam.map(j => [
+      `${String(j.jam).padStart(2,"0")}:00`, j.count, `Rp ${j.total.toLocaleString("id-ID")}`
+    ]),
+    theme: "striped",
+    headStyles: { fillColor: [220, 0, 100] },
+  });
+
+  doc.save(`laporan-mab-${new Date().toISOString().split("T")[0]}.pdf`);
 }
 
 function StatCard({ icon, label, value, sub, color }: {
@@ -189,10 +299,18 @@ export default function Laporan() {
           </div>
 
           {/* Print button */}
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2 flex-wrap">
+            <button onClick={() => exportToExcel(data)}
+              className="flex items-center gap-2 px-4 py-2 border-2 border-green-600 text-green-700 font-bold text-sm uppercase hover:bg-green-50 transition-colors">
+              <FileSpreadsheet className="w-4 h-4" /> Export Excel
+            </button>
+            <button onClick={() => exportToPDF(data)}
+              className="flex items-center gap-2 px-4 py-2 border-2 border-red-500 text-red-600 font-bold text-sm uppercase hover:bg-red-50 transition-colors">
+              <FileText className="w-4 h-4" /> Export PDF
+            </button>
             <button onClick={() => window.print()}
               className="flex items-center gap-2 px-4 py-2 border-2 border-foreground font-bold text-sm uppercase hover:bg-secondary transition-colors">
-              🖨️ Print Laporan
+              🖨️ Print
             </button>
           </div>
         </div>

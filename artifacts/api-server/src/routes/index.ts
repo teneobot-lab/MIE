@@ -8,6 +8,7 @@ import adminMenuRouter from "./admin-menu";
 import profilesRouter from "./profiles";
 import paymentsRouter from "./payments";
 import laporanRouter from "./laporan";
+import vouchersRouter from "./vouchers";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(adminMenuRouter);
 router.use(profilesRouter);
 router.use(paymentsRouter);
 router.use(laporanRouter);
+router.use(vouchersRouter);
 
 export default router;

@@ -199,6 +199,12 @@ export default function Kasir() {
           <a href="/kasir/laporan" className="flex items-center gap-2 text-sm font-mono border-2 border-foreground px-3 py-1.5 hover:bg-secondary transition-colors">
             📊 Laporan
           </a>
+          <a href="/kasir/stok" className="flex items-center gap-2 text-sm font-mono border-2 border-foreground px-3 py-1.5 hover:bg-secondary transition-colors">
+            📦 Stok
+          </a>
+          <a href="/admin/voucher" className="flex items-center gap-2 text-sm font-mono border-2 border-foreground px-3 py-1.5 hover:bg-secondary transition-colors">
+            🎟️ Voucher
+          </a>
           <button onClick={() => refetch()} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
             <RefreshCw className="w-4 h-4" /> Refresh
           </button>
