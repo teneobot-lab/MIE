@@ -3,16 +3,18 @@ import { Link } from "wouter";
 import { useGetLeaderboard, useListArchive, useUpvoteSong } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { PageTransition } from "@/components/layout/PageTransition";
-import { Flame, Music, ArrowUp, History } from "lucide-react";
+import { Flame, Music, History, Trophy, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { format } from "date-fns";
+import { VoteButton } from "@/components/ui/vote-button";
+import { WeeklyResetCountdown } from "@/components/ui/weekly-reset";
 
 export default function Leaderboard() {
-  const { data: leaderboard, isLoading: isLoadingLeaderboard } = useGetLeaderboard();
-  const { data: archive, isLoading: isLoadingArchive } = useListArchive();
+  const { data: leaderboard, isLoading } = useGetLeaderboard({ limit: 20 });
+  const { data: archive } = useListArchive();
   const [showArchive, setShowArchive] = useState(false);
-  
+  const [expandedArchive, setExpandedArchive] = useState<string | null>(null);
   const upvoteMutation = useUpvoteSong();
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -21,186 +23,175 @@ export default function Leaderboard() {
   const handleUpvote = async (songId: number) => {
     if (!handle) {
       toast({
-        title: "Woy, isi nama dulu",
-        description: "Lo harus pesan minimal sekali atau set nama di cart buat bisa nge-vote.",
+        title: "Isi nama dulu!",
+        description: "Pesan dulu atau set nama di cart untuk bisa vote.",
         variant: "destructive"
       });
-      return;
+      throw new Error("no handle");
     }
-
-    try {
-      await upvoteMutation.mutateAsync({
-        id: songId,
-        data: { handle }
-      });
-      
-      queryClient.invalidateQueries({ queryKey: [`/api/songs/leaderboard`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/songs/now-playing`] });
-      
-      toast({
-        title: "Masuk Pak Eko!",
-        description: "Vote lo udah direkam.",
-      });
-    } catch (error) {
-      toast({
-        title: "Gagal Vote",
-        description: "Ada error pas ngirim vote lo.",
-        variant: "destructive"
-      });
-    }
+    await upvoteMutation.mutateAsync({ id: songId, data: { handle } });
+    queryClient.invalidateQueries({ queryKey: [`/api/songs/leaderboard`] });
+    queryClient.invalidateQueries({ queryKey: [`/api/songs/now-playing`] });
   };
 
-  return (
-    <PageTransition className="container mx-auto px-4 py-12 max-w-4xl">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b-4 border-foreground pb-6">
-        <div>
-          <h1 className="font-display font-black text-5xl uppercase tracking-tighter transform -rotate-1 inline-block">
-            <span className="bg-primary text-primary-foreground px-4 py-1 border-2 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))]">Chart Warung</span>
-          </h1>
-          <p className="font-mono mt-6 text-muted-foreground max-w-xl">
-            Lagu dengan vote tertinggi bakal diputar terus-terusan sampai yang lain pada bosen.
-          </p>
-        </div>
+  const rankColors = [
+    "bg-yellow-400 text-yellow-900 border-yellow-500",
+    "bg-gray-300 text-gray-800 border-gray-400",
+    "bg-orange-400 text-orange-900 border-orange-500",
+  ];
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowArchive(false)}
-            className={`zine-border px-4 py-2 font-bold uppercase text-sm transition-colors flex items-center gap-2 ${
-              !showArchive 
-                ? "bg-foreground text-background" 
-                : "bg-background text-foreground hover:bg-secondary"
-            }`}
-          >
-            <Flame className="w-4 h-4" /> Minggu Ini
-          </button>
-          <button
-            onClick={() => setShowArchive(true)}
-            className={`zine-border px-4 py-2 font-bold uppercase text-sm transition-colors flex items-center gap-2 ${
-              showArchive 
-                ? "bg-foreground text-background" 
-                : "bg-background text-foreground hover:bg-secondary"
-            }`}
-          >
-            <History className="w-4 h-4" /> Archive
-          </button>
+  const rankEmoji = ["🥇", "🥈", "🥉"];
+
+  return (
+    <PageTransition className="container mx-auto px-4 py-8 max-w-4xl">
+      {/* Header */}
+      <div className="text-center mb-10 relative">
+        <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
+          <Trophy className="w-64 h-64" />
         </div>
+        <h1 className="font-display font-black text-5xl md:text-7xl uppercase tracking-tighter text-primary relative z-10"
+          style={{ textShadow: "4px 4px 0px hsl(var(--foreground))" }}>
+          Chart
+        </h1>
+        <p className="font-mono mt-4 bg-foreground text-background px-4 py-2 transform rotate-1 zine-border inline-block">
+          Top lagu berdasarkan request + upvote minggu ini
+        </p>
       </div>
 
-      {!showArchive ? (
-        <div className="space-y-6">
-          {isLoadingLeaderboard ? (
-            <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-24 bg-secondary animate-pulse zine-border"></div>
-              ))}
-            </div>
-          ) : leaderboard?.entries.length === 0 ? (
-            <div className="zine-border bg-card p-12 text-center max-w-lg mx-auto transform rotate-1">
-              <div className="tape" style={{ top: '-10px', right: '10%' }}></div>
-              <Music className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-              <p className="font-marker text-3xl mb-4 text-primary">Kosong Melompong</p>
-              <p className="font-mono text-muted-foreground mb-6">Belum ada yang request lagu minggu ini.</p>
-              <Link href="/menu" className="zine-border inline-block bg-primary text-primary-foreground font-bold uppercase px-6 py-3 hover:bg-foreground hover:text-background transition-colors">
-                Pesan & Request
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {leaderboard?.entries.map((song, i) => (
-                <div 
-                  key={song.id} 
-                  className={`zine-border bg-card p-4 sm:p-6 flex items-center gap-4 group transition-colors ${i === 0 ? 'bg-primary/10 border-primary' : 'hover:bg-secondary'}`}
-                >
-                  <div className={`font-display font-black w-10 text-center transition-colors ${i === 0 ? 'text-5xl text-primary' : 'text-4xl text-muted-foreground group-hover:text-primary'}`}>
-                    {i + 1}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-xl sm:text-2xl uppercase leading-tight truncate">
-                      {song.title}
-                    </h3>
-                    <p className="text-muted-foreground truncate font-mono text-sm sm:text-base mb-1">{song.artist}</p>
-                    
-                    {song.message && (
-                      <p className="text-xs font-mono bg-background p-2 border border-dashed border-foreground/30 mt-2 italic">
-                        "{song.message}"
-                      </p>
-                    )}
-                    
-                    <div className="flex items-center gap-4 mt-3">
-                      <p className="text-xs font-mono opacity-70">
-                        Req by: <span className="font-bold text-primary">@{song.requesterHandle}</span>
-                      </p>
-                      <span className="text-xs font-mono opacity-50">•</span>
-                      <p className="text-xs font-mono opacity-70">
-                        {song.requests} requests
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col items-center gap-2 pl-4 sm:pl-6 border-l-2 border-dashed border-muted">
-                    <div className="text-center">
-                      <p className="font-black text-2xl sm:text-3xl text-foreground">{song.upvotes}</p>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Votes</p>
-                    </div>
-                    
-                    <button 
-                      onClick={() => handleUpvote(song.id)}
-                      disabled={upvoteMutation.isPending}
-                      className="zine-border bg-primary text-primary-foreground p-2 hover:bg-foreground hover:text-background transition-colors disabled:opacity-50 mt-1"
-                    >
-                      <ArrowUp className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="space-y-12">
-          {isLoadingArchive ? (
-            <div className="space-y-8">
-              {[1, 2].map((i) => (
-                <div key={i} className="h-64 bg-secondary animate-pulse zine-border"></div>
-              ))}
-            </div>
-          ) : archive?.length === 0 ? (
-            <div className="zine-border bg-card p-12 text-center max-w-lg mx-auto">
-              <p className="font-marker text-3xl mb-4 text-primary">Archive Kosong</p>
-              <p className="font-mono text-muted-foreground">Belum ada data minggu lalu.</p>
-            </div>
-          ) : (
-            archive?.map((week, i) => (
-              <div key={i} className="zine-border bg-card p-6 relative">
-                <div className="absolute -top-4 -left-4 bg-primary text-primary-foreground px-4 py-2 font-bold uppercase tracking-widest text-sm zine-border transform -rotate-3">
-                  {format(new Date(week.weekStart), 'dd MMM')} - {format(new Date(week.weekEnd), 'dd MMM yyyy')}
-                </div>
-                
-                <div className="mt-6 mb-4 flex items-center justify-between border-b-2 border-dashed border-muted pb-4">
-                  <span className="font-mono text-sm text-muted-foreground">Total: {week.totalRequests} Requests</span>
-                </div>
-                
-                <div className="space-y-4">
-                  {week.topSongs.map((song, j) => (
-                    <div key={song.id} className="flex items-center gap-4 bg-background p-3 border border-foreground/20">
-                      <div className="font-black text-xl text-muted-foreground w-6 text-center">{j + 1}</div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold uppercase truncate">{song.title}</p>
-                        <p className="text-xs font-mono text-muted-foreground truncate">{song.artist}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-bold text-primary">{song.upvotes} <span className="text-[10px] uppercase text-muted-foreground">Votes</span></p>
-                        <p className="text-[10px] font-mono text-muted-foreground">by @{song.requesterHandle}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
+      {/* Countdown */}
+      {leaderboard && (
+        <div className="mb-8">
+          <WeeklyResetCountdown
+            resetsAt={leaderboard.resetsAt ?? null}
+            weekStart={leaderboard.weekStart ?? null}
+          />
         </div>
       )}
+
+      {/* Chart */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1,2,3,4,5].map(i => (
+            <div key={i} className="skeleton h-20 zine-border" />
+          ))}
+        </div>
+      ) : leaderboard?.entries.length === 0 ? (
+        <div className="zine-border bg-card p-12 text-center">
+          <Music className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-30" />
+          <p className="font-black text-3xl uppercase text-primary mb-2">Sepi!</p>
+          <p className="font-mono text-muted-foreground">Belum ada request minggu ini. Pesan mie dan request lagu!</p>
+          <Link href="/menu" className="inline-block mt-4 zine-border bg-primary text-primary-foreground px-6 py-2 font-bold uppercase">
+            Pesan Sekarang
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-3 mb-10">
+          {leaderboard?.entries.map((song, i) => (
+            <div key={song.id}
+              className={`border-2 p-4 flex items-center gap-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[4px_4px_0px_0px_hsl(var(--foreground))] ${
+                i < 3 ? "border-primary bg-primary/5" : "border-foreground bg-card"
+              }`}>
+              {/* Rank */}
+              <div className={`w-10 h-10 flex items-center justify-center font-black text-lg shrink-0 border-2 ${
+                i < 3 ? rankColors[i] : "bg-secondary border-foreground text-muted-foreground"
+              }`}>
+                {i < 3 ? rankEmoji[i] : i + 1}
+              </div>
+
+              {/* Song info */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-bold text-base uppercase truncate leading-tight">{song.title}</h3>
+                <p className="text-sm text-muted-foreground font-mono truncate">{song.artist}</p>
+                <p className="text-xs font-mono opacity-60 mt-0.5">
+                  req: <span className="text-primary font-bold">@{song.requesterHandle}</span>
+                  {" · "}{song.requests}x request
+                </p>
+              </div>
+
+              {/* Score */}
+              <div className="text-center shrink-0 px-3 border-l-2 border-dashed border-muted">
+                <p className="font-black text-2xl text-primary leading-none">{song.score}</p>
+                <p className="text-[10px] font-mono uppercase">score</p>
+              </div>
+
+              {/* Vote button */}
+              <VoteButton
+                count={song.upvotes}
+                onVote={() => handleUpvote(song.id)}
+                disabled={!handle}
+                size={i < 3 ? "lg" : "md"}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Archive toggle */}
+      <div className="border-t-4 border-foreground pt-8">
+        <button
+          onClick={() => setShowArchive(!showArchive)}
+          className="w-full flex items-center justify-between p-4 border-2 border-foreground hover:bg-secondary transition-colors font-bold uppercase tracking-widest">
+          <span className="flex items-center gap-2">
+            <History className="w-5 h-5" /> Arsip Chart Minggu Lalu
+          </span>
+          {showArchive ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
+        </button>
+
+        {showArchive && (
+          <div className="space-y-4 mt-4">
+            {!archive || archive.length === 0 ? (
+              <p className="text-center py-8 font-mono text-muted-foreground">Belum ada arsip</p>
+            ) : archive.map(week => (
+              <div key={week.weekStart} className="border-2 border-foreground">
+                <button
+                  onClick={() => setExpandedArchive(expandedArchive === week.weekStart ? null : week.weekStart)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-secondary transition-colors">
+                  <div className="text-left">
+                    <p className="font-bold uppercase">
+                      Minggu {format(new Date(week.weekStart), "d MMM yyyy")}
+                    </p>
+                    <p className="text-xs font-mono text-muted-foreground">
+                      {week.totalRequests} request total
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {week.topSongs[0] && (
+                      <div className="text-right hidden sm:block">
+                        <p className="text-xs font-mono text-muted-foreground">🥇 Top</p>
+                        <p className="text-sm font-bold truncate max-w-[150px]">{week.topSongs[0].title}</p>
+                      </div>
+                    )}
+                    {expandedArchive === week.weekStart
+                      ? <ChevronUp className="w-4 h-4 shrink-0" />
+                      : <ChevronDown className="w-4 h-4 shrink-0" />
+                    }
+                  </div>
+                </button>
+
+                {expandedArchive === week.weekStart && (
+                  <div className="border-t-2 border-foreground p-4 space-y-2 bg-secondary/50">
+                    {week.topSongs.map((song, i) => (
+                      <div key={song.id} className="flex items-center gap-3 p-2 bg-background border border-muted">
+                        <span className="font-black text-lg w-6 text-center text-muted-foreground">
+                          {rankEmoji[i] ?? i + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-sm truncate uppercase">{song.title}</p>
+                          <p className="text-xs text-muted-foreground font-mono truncate">{song.artist}</p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="font-bold text-primary">{song.score}</p>
+                          <p className="text-[10px] font-mono">score</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </PageTransition>
   );
 }
