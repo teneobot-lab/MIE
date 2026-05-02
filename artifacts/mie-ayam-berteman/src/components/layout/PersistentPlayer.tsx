@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { usePlayer } from "@/hooks/use-player";
-import { X, ChevronUp, ChevronDown, Radio, SkipBack, SkipForward, List } from "lucide-react";
+import { X, ChevronUp, ChevronDown, Radio, SkipBack, SkipForward, List, Play, Pause } from "lucide-react";
 
 declare global {
   interface Window { YT: any; onYouTubeIframeAPIReady: () => void; }
@@ -14,6 +14,18 @@ export function PersistentPlayer() {
   const [expanded, setExpanded] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const togglePlay = () => {
+    if (!playerRef.current) return;
+    if (isPaused) {
+      playerRef.current.playVideo();
+      setIsPaused(false);
+    } else {
+      playerRef.current.pauseVideo();
+      setIsPaused(true);
+    }
+  };
   const [bars, setBars] = useState<number[]>(Array.from({ length: 16 }, () => 20));
   const currentVideoRef = useRef<string>("");
   const announcingRef = useRef(false);
@@ -134,6 +146,10 @@ export function PersistentPlayer() {
               <button onClick={playPrev}
                 className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center text-zinc-400 hover:text-white transition-colors rounded-full hover:bg-white/10 active:scale-90">
                 <SkipBack className="w-4 h-4 fill-current" />
+              </button>
+              <button onClick={togglePlay}
+                className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-primary text-white rounded-full hover:opacity-90 active:scale-90 transition-all">
+                {isPaused ? <Play className="w-4 h-4 fill-current" /> : <Pause className="w-4 h-4 fill-current" />}
               </button>
               <button onClick={playNext}
                 className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center text-zinc-400 hover:text-white transition-colors rounded-full hover:bg-white/10 active:scale-90">
