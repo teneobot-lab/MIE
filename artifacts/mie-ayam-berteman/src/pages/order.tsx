@@ -8,6 +8,8 @@ import { useCart } from "@/hooks/use-cart";
 import { useToast } from "@/hooks/use-toast";
 import { QrisModal } from "@/components/ui/qris-modal";
 import { useOrderStatus, requestNotificationPermission } from "@/hooks/use-notifications";
+import { useMutation } from "@tanstack/react-query";
+import { customFetch } from "@workspace/api-client-react";
 import { Trash2, Music, Check, ArrowRight } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -46,6 +48,27 @@ export default function Order() {
   const [showQris, setShowQris] = useState(false);
   const [paymentDone, setPaymentDone] = useState(false);
   const [orderDone, setOrderDone] = useState(false);
+  const [voucherCode, setVoucherCode] = useState("");
+  const [voucherData, setVoucherData] = useState<any>(null);
+  const [voucherError, setVoucherError] = useState("");
+
+  const validateVoucher = async () => {
+    if (!voucherCode.trim()) return;
+    setVoucherError("");
+    try {
+      const res = await customFetch("/api/vouchers/validate", {
+        method: "POST",
+        body: JSON.stringify({ code: voucherCode, orderTotal: getCartTotal() }),
+        headers: { "Content-Type": "application/json" },
+      }) as any;
+      setVoucherData(res);
+    } catch (err: any) {
+      setVoucherError(err?.data?.message ?? "Voucher tidak valid");
+      setVoucherData(null);
+    }
+  };
+
+  const finalTotal = voucherData ? voucherData.finalTotal : getCartTotal();
 
   useOrderStatus(lastOrderId, () => setOrderDone(true));
 
@@ -100,7 +123,15 @@ export default function Order() {
 
       setLastRank(response.songRequest?.score ?? 0);
       setLastOrderId(response.id);
-      setLastTotal(response.total); // Not exact rank but gives feedback
+      setLastTotal(voucherData ? voucherData.finalTotal : response.total);
+      // Pakai voucher jika ada
+      if (voucherData) {
+        customFetch("/api/vouchers/use", {
+          method: "POST",
+          body: JSON.stringify({ code: voucherData.code }),
+          headers: { "Content-Type": "application/json" },
+        }).catch(() => {});
+      } // Not exact rank but gives feedback
       setIsSuccess(true);
       clearCart();
       window.scrollTo(0, 0);
@@ -272,11 +303,53 @@ export default function Order() {
             ))}
           </div>
 
-          <div className="zine-border bg-secondary p-6 flex justify-between items-end">
-            <span className="font-bold uppercase tracking-widest">Total Bayar</span>
-            <span className="font-display font-black text-4xl text-primary transform rotate-1 inline-block border-b-4 border-primary">
-              {formatPrice(getCartTotal())}
-            </span>
+          {/* Voucher Input */}
+          <div className="zine-border bg-card p-4">
+            <p className="text-xs font-mono uppercase tracking-widest mb-2 font-bold">🎟️ Punya Voucher?</p>
+            <div className="flex gap-2">
+              <input
+                value={voucherCode}
+                onChange={e => { setVoucherCode(e.target.value.toUpperCase()); setVoucherData(null); setVoucherError(""); }}
+                placeholder="Masukkan kode voucher"
+                className="flex-1 border-2 border-foreground px-3 py-2 font-mono text-sm uppercase bg-background focus:outline-none focus:border-primary"
+              />
+              <button onClick={validateVoucher}
+                className="px-4 py-2 border-2 border-foreground font-bold text-sm uppercase hover:bg-secondary transition-colors">
+                Pakai
+              </button>
+            </div>
+            {voucherError && (
+              <p className="text-xs text-red-500 font-mono mt-1">❌ {voucherError}</p>
+            )}
+            {voucherData && (
+              <div className="mt-2 bg-green-50 border border-green-400 px-3 py-2">
+                <p className="text-xs font-mono text-green-700 font-bold">
+                  ✅ Voucher <span className="uppercase">{voucherData.code}</span> berhasil!
+                  Hemat {voucherData.type === "percent" ? `${voucherData.value}%` : formatPrice(voucherData.discount)}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="zine-border bg-secondary p-6">
+            {voucherData && (
+              <div className="flex justify-between items-center mb-2 text-sm font-mono">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>{formatPrice(getCartTotal())}</span>
+              </div>
+            )}
+            {voucherData && (
+              <div className="flex justify-between items-center mb-3 text-sm font-mono text-green-600">
+                <span>Diskon ({voucherData.code})</span>
+                <span>- {formatPrice(voucherData.discount)}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-end border-t-2 border-foreground pt-3">
+              <span className="font-bold uppercase tracking-widest">Total Bayar</span>
+              <span className="font-display font-black text-4xl text-primary transform rotate-1 inline-block border-b-4 border-primary">
+                {formatPrice(finalTotal)}
+              </span>
+            </div>
           </div>
         </div>
 
