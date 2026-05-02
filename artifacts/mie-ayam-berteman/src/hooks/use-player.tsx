@@ -89,13 +89,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           `dari ${currentSong.requesterHandle}! Hayuk!`,
         ];
         const text = `${openers[Math.floor(Math.random() * openers.length)]} ${currentSong.title} dari ${currentSong.artist}, ${closers[Math.floor(Math.random() * closers.length)]}`;
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.lang = 'id-ID';
-        utter.rate = 1.15;
-        utter.pitch = 1.1;
-        utter.onend = () => setVideoId(vid);
-        utter.onerror = () => setVideoId(vid);
-        window.speechSynthesis.speak(utter);
+        if ((window as any).responsiveVoice) {
+          (window as any).responsiveVoice.speak(text, "Indonesian Female", {
+            rate: 1.1, pitch: 1, volume: 1,
+          });
+        } else {
+          const utter = new SpeechSynthesisUtterance(text);
+          utter.lang = 'id-ID';
+          utter.rate = 1.15;
+          utter.pitch = 1.1;
+          window.speechSynthesis.speak(utter);
+        }
       } else {
         setVideoId(vid);
       }
