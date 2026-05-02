@@ -1,3 +1,4 @@
+import React from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -27,31 +28,59 @@ const queryClient = new QueryClient({
   },
 });
 
+function AutoplayUnlock() {
+  const [unlocked, setUnlocked] = React.useState(() => {
+    return sessionStorage.getItem("autoplay_unlocked") === "1";
+  });
+  if (unlocked) return null;
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm">
+      <div className="text-center p-8 border-4 border-primary max-w-sm w-full mx-4">
+        <div className="text-6xl mb-4">🎸</div>
+        <h1 className="font-black text-3xl uppercase text-white mb-2">Mie Ayam Berteman</h1>
+        <p className="font-mono text-zinc-400 mb-6 text-sm">Warung makan dengan playlist request langsung!</p>
+        <button
+          onClick={() => {
+            sessionStorage.setItem("autoplay_unlocked", "1");
+            setUnlocked(true);
+          }}
+          className="w-full bg-primary text-primary-foreground font-black uppercase text-lg py-4 px-8 hover:opacity-90 active:scale-95 transition-all"
+        >
+          🍜 Masuk ke Warung
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Router() {
   return (
-    <div className="min-h-[100dvh] flex flex-col selection:bg-primary selection:text-primary-foreground pb-16">
-      <Navbar />
-      <main className="flex-1">
-        <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/menu" component={Menu} />
-          <Route path="/menu/:id" component={MenuDetail} />
-          <Route path="/order" component={Order} />
-          <Route path="/leaderboard" component={Leaderboard} />
-          <Route path="/now-playing" component={NowPlaying} />
-          <Route path="/friends" component={Friends} />
-          <Route path="/admin/menu" component={AdminMenu} />
-          <Route path="/kasir" component={Kasir} />
-          <Route path="/kasir/laporan" component={Laporan} />
-          <Route path="/kasir/stok" component={Stok} />
-          <Route path="/admin/voucher" component={AdminVoucher} />
-          <Route path="/dashboard" component={Dashboard} />
-          <Route component={NotFound} />
-        </Switch>
-      </main>
-      <Footer />
-      <PersistentPlayer />
-    </div>
+    <>
+      <AutoplayUnlock />
+      <div className="min-h-[100dvh] flex flex-col selection:bg-primary selection:text-primary-foreground pb-16">
+        <Navbar />
+        <main className="flex-1">
+          <Switch>
+            <Route path="/" component={Home} />
+            <Route path="/menu" component={Menu} />
+            <Route path="/menu/:id" component={MenuDetail} />
+            <Route path="/order" component={Order} />
+            <Route path="/leaderboard" component={Leaderboard} />
+            <Route path="/now-playing" component={NowPlaying} />
+            <Route path="/friends" component={Friends} />
+            <Route path="/admin/menu" component={AdminMenu} />
+            <Route path="/kasir" component={Kasir} />
+            <Route path="/kasir/laporan" component={Laporan} />
+            <Route path="/kasir/stok" component={Stok} />
+            <Route path="/admin/voucher" component={AdminVoucher} />
+            <Route path="/dashboard" component={Dashboard} />
+            <Route component={NotFound} />
+          </Switch>
+        </main>
+        <Footer />
+        <PersistentPlayer />
+      </div>
+    </>
   );
 }
 
