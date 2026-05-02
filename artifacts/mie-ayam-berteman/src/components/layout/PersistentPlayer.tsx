@@ -15,6 +15,8 @@ export function PersistentPlayer() {
   const [showQueue, setShowQueue] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [bars, setBars] = useState<number[]>(Array.from({ length: 16 }, () => 20));
+  const currentVideoRef = useRef<string>("");
 
   const togglePlay = () => {
     if (!playerRef.current) return;
@@ -25,36 +27,6 @@ export function PersistentPlayer() {
       playerRef.current.pauseVideo();
       setIsPaused(true);
     }
-  };
-  const [bars, setBars] = useState<number[]>(Array.from({ length: 16 }, () => 20));
-  const currentVideoRef = useRef<string>("");
-  const announcingRef = useRef(false);
-
-  const announceAndPlay = (song: { title: string; artist: string; requesterHandle: string }, vid: string) => {
-    window.speechSynthesis.cancel();
-    announcingRef.current = true;
-
-    const openers = [
-      `Oi oi oi! Selanjutnya kita putar`,
-      `Yo! Request masuk nih,`,
-      `Gaskeun! Berikutnya ada`,
-      `Hei hei! Siap-siap dengerin`,
-    ];
-    const closers = [
-      `request dari ${song.requesterHandle}! Let's go!`,
-    ];
-    const opener = openers[Math.floor(Math.random() * openers.length)];
-    const closer = closers[Math.floor(Math.random() * closers.length)];
-    const text = `${opener} ${song.title} dari ${song.artist}, ${closer}`;
-
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'id-ID';
-    utter.rate = 1.15;
-    utter.pitch = 1.1;
-    utter.volume = 1;
-    utter.onend = () => { announcingRef.current = false; setVideoId(vid); };
-    utter.onerror = () => { announcingRef.current = false; setVideoId(vid); };
-    window.speechSynthesis.speak(utter);
   };
 
   // Load YouTube API
@@ -73,17 +45,19 @@ export function PersistentPlayer() {
     if (videoId === currentVideoRef.current) return;
     currentVideoRef.current = videoId;
     setDismissed(false);
+    setIsPaused(false);
     if (playerRef.current?.loadVideoById) {
       playerRef.current.loadVideoById(videoId);
     } else {
       playerRef.current = new window.YT.Player(playerDivRef.current, {
         height: "100%", width: "100%", videoId,
-        playerVars: { autoplay: 1, controls: 1, modestbranding: 1, rel: 0 },
+        playerVars: { autoplay: 1, controls: 0, modestbranding: 1, rel: 0 },
         events: {
           onReady: (e: any) => e.target.playVideo(),
           onStateChange: (e: any) => {
-            // Auto play next when video ends
             if (e.data === window.YT.PlayerState.ENDED) playNext();
+            if (e.data === window.YT.PlayerState.PAUSED) setIsPaused(true);
+            if (e.data === window.YT.PlayerState.PLAYING) setIsPaused(false);
           }
         },
       });
@@ -102,11 +76,6 @@ export function PersistentPlayer() {
 
   return (
     <>
-      {/* Hidden player div - always in DOM */}
-      <div className="fixed z-[-1] opacity-0 pointer-events-none" style={{ width: 1, height: 1, bottom: 0 }}>
-        <div ref={playerDivRef} style={{ width: 1, height: 1 }} />
-      </div>
-
       {currentSong && videoId && !dismissed && (
         <div className={`fixed bottom-0 left-0 right-0 z-50 transition-all duration-400 ease-in-out ${totalHeight}`}>
           {/* Background */}
@@ -115,7 +84,6 @@ export function PersistentPlayer() {
 
           {/* Main bar */}
           <div className="relative z-10 flex items-center px-3 md:px-4 h-[72px] gap-2 md:gap-3">
-
             {/* Radio icon */}
             <div className="w-9 h-9 md:w-10 md:h-10 bg-primary flex items-center justify-center shrink-0">
               <Radio className="w-4 h-4 md:w-5 md:h-5 text-white animate-pulse" />
@@ -148,7 +116,7 @@ export function PersistentPlayer() {
                 <SkipBack className="w-4 h-4 fill-current" />
               </button>
               <button onClick={togglePlay}
-                className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-primary text-white rounded-full hover:opacity-90 active:scale-90 transition-all">
+                className="w-9 h-9 md:w-10 md:h-10 flex items-center justify-center bg-primary text-white rounded-full hover:opacity-90 active:scale-90 transition-all mx-1">
                 {isPaused ? <Play className="w-4 h-4 fill-current" /> : <Pause className="w-4 h-4 fill-current" />}
               </button>
               <button onClick={playNext}
@@ -173,12 +141,13 @@ export function PersistentPlayer() {
           {/* Expanded content */}
           {expanded && (
             <div className="relative z-10 flex gap-3 px-3 md:px-4 pb-4" style={{ height: "calc(100% - 72px)" }}>
-              {/* YouTube Player */}
-              {!showQueue && (
-                <div className="flex-1 border border-zinc-700 overflow-hidden rounded-sm">
-                  <div ref={playerDivRef} className="w-full h-full" />
-                </div>
-              )}
+              {/* YouTube Player — satu ref, toggle display */}
+              <div
+                className="flex-1 border border-zinc-700 overflow-hidden rounded-sm"
+                style={{ display: showQueue ? "none" : "block" }}
+              >
+                <div ref={playerDivRef} className="w-full h-full" />
+              </div>
 
               {/* Queue panel */}
               {showQueue && (
