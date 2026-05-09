@@ -17,6 +17,8 @@ export function PersistentPlayer() {
   const [isPaused, setIsPaused] = useState(false);
   const [bars, setBars] = useState<number[]>(Array.from({ length: 16 }, () => 20));
   const currentVideoRef = useRef<string>("");
+  // Auto-expand saat lagu baru masuk
+  const prevVideoId = useRef<string | null>(null);
 
   const togglePlay = () => {
     if (!playerRef.current) return;
@@ -46,6 +48,7 @@ export function PersistentPlayer() {
     currentVideoRef.current = videoId;
     setDismissed(false);
     setIsPaused(false);
+    setExpanded(true); // auto expand agar iframe visible
     if (playerRef.current?.loadVideoById) {
       playerRef.current.loadVideoById(videoId);
     } else {
