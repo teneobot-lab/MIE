@@ -36,7 +36,7 @@ const PlayerContext = createContext<PlayerContextType>({
 });
 
 async function searchYouTube(title: string, artist: string): Promise<string | null> {
-  const apiKey = import.meta.env.VITE_YOUTUBE_API_KEY;
+  const apiKey = "AIzaSyAEb_fLZy1cd5jtuc6ICaPdJk2t4Umi8Zk";
   if (!apiKey) return null;
   const q = encodeURIComponent(`${title} ${artist} official`);
   const res = await fetch(
