@@ -92,35 +92,15 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         `dari ${currentSong.requesterHandle}! Hayuk!`,
       ];
       const text = `${openers[Math.floor(Math.random() * openers.length)]} ${currentSong.title} dari ${currentSong.artist}, ${closers[Math.floor(Math.random() * closers.length)]}`;
-      const trySpeech = () => {
-        if (typeof window === 'undefined' || !window.speechSynthesis) {
-          startMusic();
-          return;
-        }
-        window.speechSynthesis.cancel();
-        // Small delay to let cancel() flush
-        setTimeout(() => {
-          const utter = new SpeechSynthesisUtterance(text);
-          utter.lang = 'id-ID';
-          utter.rate = 1.15;
-          utter.pitch = 1.1;
-          utter.volume = 1;
-          let started = false;
-          utter.onstart = () => { started = true; };
-          utter.onend = startMusic;
-          utter.onerror = startMusic;
-          window.speechSynthesis.speak(utter);
-          // Fallback: jika 4 detik speech belum mulai, langsung startMusic
-          setTimeout(() => {
-            if (!started) {
-              window.speechSynthesis.cancel();
-              startMusic();
-            }
-          }, 4000);
-        }, 150);
-      };
-      startMusic();
-      trySpeech();
+      const rv = (window as any).responsiveVoice;
+      if (rv && rv.voiceSupport()) {
+        let done = false;
+        const safeStart = () => { if (!done) { done = true; startMusic(); } };
+        rv.speak(text, "Indonesian Female", { rate: 1.1, pitch: 1, volume: 1, onend: safeStart });
+        setTimeout(safeStart, 8000); // fallback 8 detik
+      } else {
+        startMusic();
+      }
     });
   }, [currentSong?.title, currentSong?.artist]);
 
