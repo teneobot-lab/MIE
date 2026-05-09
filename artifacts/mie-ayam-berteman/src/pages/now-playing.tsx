@@ -11,6 +11,8 @@ import { useCart } from "@/hooks/use-cart";
 import { SkipForward, Timer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+const SKIP_THRESHOLD = 3;
+
 export default function NowPlaying() {
   const { data, isLoading, refetch } = useGetNowPlaying();
   const { currentSong, allSongs, currentIndex, playAt } = usePlayer();
@@ -27,7 +29,6 @@ export default function NowPlaying() {
   const handle = useCart(state => state.handle);
   const { toast } = useToast();
   const [skipVotes, setSkipVotes] = useState(0);
-  const SKIP_THRESHOLD = 3;
   const [hasSkipVoted, setHasSkipVoted] = useState(false);
   const [countdown, setCountdown] = useState<string | null>(null);
 
