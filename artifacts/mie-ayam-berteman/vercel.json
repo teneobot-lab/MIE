@@ -3,11 +3,11 @@
   "outputDirectory": "dist/public",
   "rewrites": [
     {
-      "source": "/api-mab/:path*",
+      "source": "/api/:path*",
       "destination": "http://35.198.238.64:8080/api/:path*"
     },
     {
-      "source": "/((?!api-mab).*)",
+      "source": "/((?!api).*)",
       "destination": "/index.html"
     }
   ]
