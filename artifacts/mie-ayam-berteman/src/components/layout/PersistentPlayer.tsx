@@ -141,16 +141,25 @@ export function PersistentPlayer() {
             </div>
           </div>
 
+          {/* YouTube player selalu di DOM agar autoplay tidak diblokir */}
+          <div
+            ref={playerDivRef}
+            style={{
+              position: "absolute",
+              width: expanded && !showQueue ? "calc(50% - 1.5rem)" : "200px",
+              height: expanded && !showQueue ? "calc(100% - 88px)" : "150px",
+              bottom: expanded && !showQueue ? "16px" : "72px",
+              left: expanded && !showQueue ? "12px" : "-9999px",
+              overflow: "hidden",
+              opacity: expanded && !showQueue ? 1 : 0,
+              zIndex: expanded && !showQueue ? 20 : -1,
+            }}
+          />
           {/* Expanded content */}
           {expanded && (
             <div className="relative z-10 flex gap-3 px-3 md:px-4 pb-4" style={{ height: "calc(100% - 72px)" }}>
-              {/* YouTube Player — satu ref, toggle display */}
-              <div
-                className="flex-1 border border-zinc-700 overflow-hidden rounded-sm"
-                style={{ display: showQueue ? "none" : "block" }}
-              >
-                <div ref={playerDivRef} className="w-full h-full" />
-              </div>
+              {/* YouTube Player slot — player div sudah di atas */}
+              {!showQueue && <div className="flex-1 border border-zinc-700 overflow-hidden rounded-sm" />}
 
               {/* Queue panel */}
               {showQueue && (
