@@ -36,14 +36,10 @@ const PlayerContext = createContext<PlayerContextType>({
 });
 
 async function searchYouTube(title: string, artist: string): Promise<string | null> {
-  const apiKey = "AIzaSyAEb_fLZy1cd5jtuc6ICaPdJk2t4Umi8Zk";
-  if (!apiKey) return null;
-  const q = encodeURIComponent(`${title} ${artist} official`);
-  const res = await fetch(
-    `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&type=video&maxResults=1&key=${apiKey}`
-  );
+  const q = `${title} ${artist} official`;
+  const res = await fetch(`/api/youtube/search?q=${encodeURIComponent(q)}`);
   const data = await res.json();
-  return data.items?.[0]?.id?.videoId ?? null;
+  return data.videoId ?? null;
 }
 
 export function PlayerProvider({ children }: { children: React.ReactNode }) {
@@ -52,6 +48,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const currentKeyRef = useRef<string>("");
+  const recordedIdsRef = useRef<Set<number>>(new Set());
 
   // Gabungkan nowplaying + queue jadi satu list
   const allSongs: Song[] = data
@@ -80,7 +77,8 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
         setVideoId(vid);
         setIsPlaying(true);
         // Record ke history
-        if (currentSong) {
+        if (currentSong && !recordedIdsRef.current.has(currentSong.id)) {
+          recordedIdsRef.current.add(currentSong.id);
           fetch('/api/songs/history', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

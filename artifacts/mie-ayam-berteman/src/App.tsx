@@ -25,7 +25,9 @@ import AdminSettings from "@/pages/admin-settings";
 import { SettingsProvider } from "@/hooks/use-settings";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import { AdminGuard } from "@/components/layout/AdminGuard";
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import Login from "@/pages/login";
+import Setup from "@/pages/setup";
 import HistoryPage from "@/pages/history";
 import QrMeja from "@/pages/qr-meja";
 
@@ -67,6 +69,7 @@ function Router() {
       <div className="min-h-[100dvh] flex flex-col selection:bg-primary selection:text-primary-foreground pb-16">
         <Navbar />
         <main className="flex-1">
+            <ErrorBoundary>
           <Switch>
             <Route path="/" component={Home} />
             <Route path="/menu" component={Menu} />
@@ -81,13 +84,15 @@ function Router() {
             <Route path="/kasir/stok" component={() => <AdminGuard><Stok /></AdminGuard>} />
             <Route path="/admin/voucher" component={() => <AdminGuard><AdminVoucher /></AdminGuard>} />
             <Route path="/login" component={Login} />
+            <Route path="/setup" component={Setup} />
             <Route path="/dashboard" component={() => <AdminGuard><Dashboard /></AdminGuard>} />
             <Route path="/admin/settings" component={() => <AdminGuard><AdminSettings /></AdminGuard>} />
             <Route path="/history" component={HistoryPage} />
             <Route path="/qr-meja" component={QrMeja} />
             <Route component={NotFound} />
           </Switch>
-        </main>
+        </ErrorBoundary>
+            </main>
         <Footer />
         <PersistentPlayer />
       </div>

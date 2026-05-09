@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import authRouter, { requireAuth } from "./auth";
+import youtubeRouter from "./youtube";
 import skipRouter from "./skip";
 import historyRouter from "./history";
 import settingsRouter from "./settings";
@@ -17,6 +18,7 @@ import vouchersRouter from "./vouchers";
 const router: IRouter = Router();
 
 // Public routes
+router.use(youtubeRouter);
 router.use(healthRouter);
 router.use(menuRouter);
 router.use(ordersRouter);

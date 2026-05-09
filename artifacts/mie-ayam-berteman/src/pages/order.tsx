@@ -49,6 +49,7 @@ export default function Order() {
   const [paymentDone, setPaymentDone] = useState(false);
   const [orderDone, setOrderDone] = useState(false);
   const [voucherCode, setVoucherCode] = useState("");
+  const [confirmRemoveId, setConfirmRemoveId] = useState<number | null>(null);
   const [voucherData, setVoucherData] = useState<any>(null);
   const [voucherError, setVoucherError] = useState("");
 
@@ -454,5 +455,26 @@ export default function Order() {
         />
       )}
     </PageTransition>
+  );  return (
+    <>
+      {confirmRemoveId !== null && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+          <div className="bg-card border-4 border-destructive p-6 max-w-sm w-full">
+            <h3 className="font-black text-xl uppercase mb-2">Hapus Item?</h3>
+            <p className="font-mono text-sm text-muted-foreground mb-6">Item ini akan dihapus dari keranjang.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmRemoveId(null)}
+                className="flex-1 border-2 border-foreground py-2.5 font-bold uppercase text-sm hover:bg-secondary transition-all">
+                Batal
+              </button>
+              <button onClick={() => { removeItem(confirmRemoveId); setConfirmRemoveId(null); }}
+                className="flex-1 bg-destructive text-destructive-foreground py-2.5 font-bold uppercase text-sm border-2 border-destructive hover:opacity-90 transition-all">
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
