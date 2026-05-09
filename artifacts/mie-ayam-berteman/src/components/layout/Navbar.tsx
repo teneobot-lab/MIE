@@ -24,6 +24,7 @@ export function Navbar() {
     { href: "/admin/voucher", label: "Voucher" },
     { href: "/kasir/laporan", label: "Laporan" },
     { href: "/history", label: "History" },
+    { href: "/admin/settings", label: "Pengaturan" },
     { href: "/qr-meja", label: "QR Meja" },
   ];
 

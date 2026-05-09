@@ -21,6 +21,8 @@ import Laporan from "@/pages/laporan";
 import Stok from "@/pages/stok";
 import AdminVoucher from "@/pages/admin-voucher";
 import Dashboard from "@/pages/dashboard";
+import AdminSettings from "@/pages/admin-settings";
+import { SettingsProvider } from "@/hooks/use-settings";
 import HistoryPage from "@/pages/history";
 import QrMeja from "@/pages/qr-meja";
 
@@ -76,6 +78,7 @@ function Router() {
             <Route path="/kasir/stok" component={Stok} />
             <Route path="/admin/voucher" component={AdminVoucher} />
             <Route path="/dashboard" component={Dashboard} />
+            <Route path="/admin/settings" component={AdminSettings} />
             <Route path="/history" component={HistoryPage} />
             <Route path="/qr-meja" component={QrMeja} />
             <Route component={NotFound} />
@@ -93,9 +96,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+          <SettingsProvider>
           <PlayerProvider>
             <Router />
           </PlayerProvider>
+          </SettingsProvider>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>
