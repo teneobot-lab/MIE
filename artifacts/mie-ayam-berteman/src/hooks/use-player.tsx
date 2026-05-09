@@ -74,6 +74,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
     if (key === currentKeyRef.current) return;
     currentKeyRef.current = key;
     searchYouTube(currentSong.title, currentSong.artist).then(vid => {
+      console.log("[PLAYER] videoId dari YouTube:", vid, "song:", currentSong.title);
       const startMusic = () => {
         setVideoId(vid);
         setIsPlaying(true);
