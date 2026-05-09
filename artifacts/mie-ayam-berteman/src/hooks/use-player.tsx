@@ -97,7 +97,9 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       if (rv && rv.voiceSupport()) {
         let done = false;
         const safeStart = () => { if (!done) { done = true; startMusic(); } };
-        rv.speak(text, "Indonesian Female", { rate: 1.1, pitch: 1, volume: 1, onend: safeStart });
+        const voices = ["Indonesian Female", "Indonesian Male", "id-ID"];
+        const useVoice = voices.find(v => rv.hasVoice(v)) || "Indonesian Female";
+        rv.speak(text, useVoice, { rate: 1.1, pitch: 1, volume: 1, onend: safeStart, onerror: safeStart });
         setTimeout(safeStart, 8000); // fallback 8 detik
       } else {
         startMusic();
