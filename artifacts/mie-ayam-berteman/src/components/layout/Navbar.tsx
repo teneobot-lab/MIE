@@ -1,10 +1,13 @@
 import { Link, useLocation } from "wouter";
 import { ShoppingCart, Menu as MenuIcon, Music, Users, Home } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { useAuth } from "@/hooks/use-auth";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const [location] = useLocation();
+  const { admin, logout } = useAuth();
   const itemCount = useCart((state) => state.getItemCount());
 
   const isAdmin = location.startsWith("/kasir") || location.startsWith("/admin") || location === "/dashboard";

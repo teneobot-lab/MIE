@@ -23,6 +23,9 @@ import AdminVoucher from "@/pages/admin-voucher";
 import Dashboard from "@/pages/dashboard";
 import AdminSettings from "@/pages/admin-settings";
 import { SettingsProvider } from "@/hooks/use-settings";
+import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import { AdminGuard } from "@/components/layout/AdminGuard";
+import Login from "@/pages/login";
 import HistoryPage from "@/pages/history";
 import QrMeja from "@/pages/qr-meja";
 
@@ -72,13 +75,14 @@ function Router() {
             <Route path="/leaderboard" component={Leaderboard} />
             <Route path="/now-playing" component={NowPlaying} />
             <Route path="/friends" component={Friends} />
-            <Route path="/admin/menu" component={AdminMenu} />
-            <Route path="/kasir" component={Kasir} />
-            <Route path="/kasir/laporan" component={Laporan} />
-            <Route path="/kasir/stok" component={Stok} />
-            <Route path="/admin/voucher" component={AdminVoucher} />
-            <Route path="/dashboard" component={Dashboard} />
-            <Route path="/admin/settings" component={AdminSettings} />
+            <Route path="/admin/menu" component={() => <AdminGuard><AdminMenu /></AdminGuard>} />
+            <Route path="/kasir" component={() => <AdminGuard><Kasir /></AdminGuard>} />
+            <Route path="/kasir/laporan" component={() => <AdminGuard><Laporan /></AdminGuard>} />
+            <Route path="/kasir/stok" component={() => <AdminGuard><Stok /></AdminGuard>} />
+            <Route path="/admin/voucher" component={() => <AdminGuard><AdminVoucher /></AdminGuard>} />
+            <Route path="/login" component={Login} />
+            <Route path="/dashboard" component={() => <AdminGuard><Dashboard /></AdminGuard>} />
+            <Route path="/admin/settings" component={() => <AdminGuard><AdminSettings /></AdminGuard>} />
             <Route path="/history" component={HistoryPage} />
             <Route path="/qr-meja" component={QrMeja} />
             <Route component={NotFound} />
@@ -96,11 +100,13 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-          <SettingsProvider>
+          <AuthProvider>
+        <SettingsProvider>
           <PlayerProvider>
             <Router />
           </PlayerProvider>
           </SettingsProvider>
+        </AuthProvider>
         </WouterRouter>
         <Toaster />
       </TooltipProvider>

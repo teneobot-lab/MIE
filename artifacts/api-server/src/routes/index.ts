@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import authRouter, { requireAuth } from "./auth";
 import skipRouter from "./skip";
 import historyRouter from "./history";
 import settingsRouter from "./settings";
@@ -14,17 +15,23 @@ import laporanRouter from "./laporan";
 import vouchersRouter from "./vouchers";
 
 const router: IRouter = Router();
+
+// Public routes
 router.use(healthRouter);
 router.use(menuRouter);
 router.use(ordersRouter);
 router.use(songsRouter);
-router.use(statsRouter);
-router.use(adminMenuRouter);
 router.use(profilesRouter);
 router.use(paymentsRouter);
-router.use(laporanRouter);
-router.use(vouchersRouter);
+router.use(settingsRouter);
 router.use(skipRouter);
 router.use(historyRouter);
-router.use(settingsRouter);
+router.use(authRouter);
+
+// Protected routes (kasir/admin only)
+router.use(requireAuth, statsRouter);
+router.use(requireAuth, adminMenuRouter);
+router.use(requireAuth, laporanRouter);
+router.use(requireAuth, vouchersRouter);
+
 export default router;
