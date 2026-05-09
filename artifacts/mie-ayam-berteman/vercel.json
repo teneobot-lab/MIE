@@ -1,8 +1,13 @@
 {
+  "framework": null,
   "outputDirectory": "dist/public",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api-mab/:path*",
+      "destination": "http://35.198.238.64:8080/:path*"
+    },
+    {
+      "source": "/((?!api-mab).*)",
       "destination": "/index.html"
     }
   ]
