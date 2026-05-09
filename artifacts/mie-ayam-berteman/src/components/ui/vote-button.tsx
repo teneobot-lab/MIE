@@ -12,7 +12,7 @@ type Props = {
 
 export function VoteButton({ count, onVote, disabled, size = "md" }: Props) {
   const [isVoting, setIsVoting] = useState(false);
-  const [localCount, setLocalCount] = useState(count);
+  const [localCount, setLocalCount] = useState(() => count);
   const [hasVoted, setHasVoted] = useState(false);
   const [animate, setAnimate] = useState(false);
 

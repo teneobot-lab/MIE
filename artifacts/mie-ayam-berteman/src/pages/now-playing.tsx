@@ -74,7 +74,7 @@ export default function NowPlaying() {
                 </div>
                 {data?.song && (
                   <div className="flex items-center gap-3 mb-4">
-                    <VoteButton count={data.song.upvotes} onVote={() => handleUpvote(data.song!.id)} disabled={!handle} size="lg" />
+                    <VoteButton key={data.song.id} count={data.song.upvotes} onVote={() => handleUpvote(data.song!.id)} disabled={!handle} size="lg" />
                     <span className="text-xs font-mono text-muted-foreground">{!handle ? "Pesan dulu untuk vote" : "Vote lagu ini!"}</span>
                   </div>
                 )}
@@ -134,7 +134,7 @@ export default function NowPlaying() {
                     <p className="text-xs truncate opacity-80">{song.artist}</p>
                   </div>
                   <div className="shrink-0">
-                    <VoteButton count={song.upvotes} onVote={() => handleUpvote(song.id)} disabled={!handle} size="sm" />
+                    <VoteButton key={song.id} count={song.upvotes} onVote={() => handleUpvote(song.id)} disabled={!handle} size="sm" />
                   </div>
                 </div>
               )) : <div className="text-center py-8 opacity-50 font-mono"><p className="font-bold uppercase">Antrian kosong.</p></div>}
