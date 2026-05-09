@@ -34,27 +34,6 @@ function StatusBadge({ payment }: { payment: Payment | null }) {
     <span className="flex items-center gap-1 text-xs font-mono bg-red-100 text-red-800 px-2 py-1 border border-red-400">
       <XCircle className="w-3 h-3" /> CANCEL
     </span>
-    {/* Konfirmasi Cancel Order */}
-      {confirmCancelId !== null && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-card border-4 border-destructive p-6 max-w-sm w-full zine-border">
-            <h3 className="font-black text-xl uppercase mb-2 text-destructive">Batalkan Order?</h3>
-            <p className="font-mono text-sm text-muted-foreground mb-6">
-              Order #{confirmCancelId} akan dibatalkan dan tidak bisa dikembalikan.
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => setConfirmCancelId(null)}
-                className="flex-1 border-2 border-foreground py-2.5 font-bold uppercase text-sm hover:bg-secondary transition-all">
-                Batal
-              </button>
-              <button onClick={() => { cancelMutation.mutate(confirmCancelId); setConfirmCancelId(null); }}
-                className="flex-1 bg-destructive text-destructive-foreground py-2.5 font-bold uppercase text-sm hover:opacity-90 transition-all border-2 border-destructive">
-                Ya, Batalkan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
   );
 }
 
@@ -67,27 +46,6 @@ function OrderStatusBadge({ status }: { status: string }) {
   );
   return (
     <span className="text-xs font-mono bg-green-100 text-green-700 px-2 py-0.5 border border-green-300">✅ SELESAI</span>
-    {/* Konfirmasi Cancel Order */}
-      {confirmCancelId !== null && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-card border-4 border-destructive p-6 max-w-sm w-full zine-border">
-            <h3 className="font-black text-xl uppercase mb-2 text-destructive">Batalkan Order?</h3>
-            <p className="font-mono text-sm text-muted-foreground mb-6">
-              Order #{confirmCancelId} akan dibatalkan dan tidak bisa dikembalikan.
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => setConfirmCancelId(null)}
-                className="flex-1 border-2 border-foreground py-2.5 font-bold uppercase text-sm hover:bg-secondary transition-all">
-                Batal
-              </button>
-              <button onClick={() => { cancelMutation.mutate(confirmCancelId); setConfirmCancelId(null); }}
-                className="flex-1 bg-destructive text-destructive-foreground py-2.5 font-bold uppercase text-sm hover:opacity-90 transition-all border-2 border-destructive">
-                Ya, Batalkan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
   );
 }
 
@@ -149,27 +107,6 @@ function ReceiptPreview({ order, type }: { order: Order; type: "customer" | "kit
         <p>Jangan lupa request lagu 🎵</p>
       </div>
     </div>
-    {/* Konfirmasi Cancel Order */}
-      {confirmCancelId !== null && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-card border-4 border-destructive p-6 max-w-sm w-full zine-border">
-            <h3 className="font-black text-xl uppercase mb-2 text-destructive">Batalkan Order?</h3>
-            <p className="font-mono text-sm text-muted-foreground mb-6">
-              Order #{confirmCancelId} akan dibatalkan dan tidak bisa dikembalikan.
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => setConfirmCancelId(null)}
-                className="flex-1 border-2 border-foreground py-2.5 font-bold uppercase text-sm hover:bg-secondary transition-all">
-                Batal
-              </button>
-              <button onClick={() => { cancelMutation.mutate(confirmCancelId); setConfirmCancelId(null); }}
-                className="flex-1 bg-destructive text-destructive-foreground py-2.5 font-bold uppercase text-sm hover:opacity-90 transition-all border-2 border-destructive">
-                Ya, Batalkan
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
   );
 }
 
@@ -391,14 +328,14 @@ export default function Kasir() {
           onClose={() => setShowQris(false)}
         />
       )}
-    </div>
-    {/* Konfirmasi Cancel Order */}
+
+      {/* Konfirmasi Cancel Order */}
       {confirmCancelId !== null && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-card border-4 border-destructive p-6 max-w-sm w-full zine-border">
             <h3 className="font-black text-xl uppercase mb-2 text-destructive">Batalkan Order?</h3>
             <p className="font-mono text-sm text-muted-foreground mb-6">
-              Order #{confirmCancelId} akan dibatalkan dan tidak bisa dikembalikan.
+              Order akan dibatalkan dan tidak bisa dikembalikan.
             </p>
             <div className="flex gap-3">
               <button onClick={() => setConfirmCancelId(null)}
@@ -413,5 +350,7 @@ export default function Kasir() {
           </div>
         </div>
       )}
+    </div>
   );
 }
+
