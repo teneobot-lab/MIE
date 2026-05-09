@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import skipRouter from "./skip";
+import historyRouter from "./history";
 import healthRouter from "./health";
 import menuRouter from "./menu";
 import ordersRouter from "./orders";
@@ -22,5 +24,7 @@ router.use(profilesRouter);
 router.use(paymentsRouter);
 router.use(laporanRouter);
 router.use(vouchersRouter);
+  router.use(skipRouter);
+  router.use(historyRouter);
 
 export default router;

@@ -23,6 +23,8 @@ export function Navbar() {
     { href: "/kasir/stok", label: "Stok" },
     { href: "/admin/voucher", label: "Voucher" },
     { href: "/kasir/laporan", label: "Laporan" },
+    { href: "/history", label: "History" },
+    { href: "/qr-meja", label: "QR Meja" },
   ];
 
   return (

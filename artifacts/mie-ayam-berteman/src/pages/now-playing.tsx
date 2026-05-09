@@ -8,6 +8,7 @@ import { VoteButton } from "@/components/ui/vote-button";
 import { useUpvoteSong } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCart } from "@/hooks/use-cart";
+import { SkipForward, Timer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function NowPlaying() {
@@ -25,6 +26,50 @@ export default function NowPlaying() {
   const queryClient = useQueryClient();
   const handle = useCart(state => state.handle);
   const { toast } = useToast();
+  const [skipVotes, setSkipVotes] = useState(0);
+  const SKIP_THRESHOLD = 3;
+  const [hasSkipVoted, setHasSkipVoted] = useState(false);
+  const [countdown, setCountdown] = useState<string | null>(null);
+
+  // Countdown estimasi (rata2 4 menit per lagu)
+  useEffect(() => {
+    const AVG_SONG_MINUTES = 4;
+    const interval = setInterval(() => {
+      if (!data?.queue) return;
+      const now = new Date();
+      const est = new Date(now.getTime() + AVG_SONG_MINUTES * 60000);
+      const diff = Math.max(0, est.getTime() - now.getTime());
+      const m = Math.floor(diff / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setCountdown(`${m}:${s.toString().padStart(2, "0")}`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [data?.queue]);
+
+  // Fetch skip votes
+  useEffect(() => {
+    if (!song?.id) return;
+    fetch(`/api/songs/${song.id}/skip-votes`)
+      .then(r => r.json())
+      .then(d => setSkipVotes(d.skipVotes ?? 0))
+      .catch(() => {});
+    setHasSkipVoted(false);
+  }, [song?.id]);
+
+  const handleSkipVote = async () => {
+    if (!handle) { toast({ title: "Pesan dulu untuk vote skip!", variant: "destructive" }); return; }
+    if (!song) return;
+    const res = await fetch(`/api/songs/${song.id}/skip-vote`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ handle }),
+    });
+    const d = await res.json();
+    setSkipVotes(d.skipVotes);
+    setHasSkipVoted(true);
+    if (d.shouldSkip) toast({ title: "Skip vote tercapai! Lagu akan diganti." });
+    else toast({ title: `Skip vote: ${d.skipVotes}/${d.threshold}` });
+  };
 
   useEffect(() => {
     const interval = setInterval(() => refetch(), 10000);
@@ -96,6 +141,20 @@ export default function NowPlaying() {
                   </div>
                 )}
 
+                {/* Skip vote + Countdown */}
+                <div className="flex items-center gap-3 mb-3 flex-wrap">
+                  <button onClick={handleSkipVote} disabled={hasSkipVoted || !handle}
+                    className={`flex items-center gap-2 px-4 py-2 border-2 font-bold text-sm uppercase transition-all zine-border ${hasSkipVoted ? "bg-secondary border-secondary text-muted-foreground" : "border-foreground hover:bg-secondary active:scale-95"}`}>
+                    <SkipForward className="w-4 h-4" />
+                    Skip ({skipVotes}/{SKIP_THRESHOLD})
+                  </button>
+                  {countdown && (
+                    <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground border-2 border-dashed border-muted-foreground px-3 py-2">
+                      <Timer className="w-4 h-4 text-primary" />
+                      Est. selesai ~{countdown}
+                    </div>
+                  )}
+                </div>
                 {/* Equalizer */}
                 <div className="flex items-end gap-0.5 h-12 w-full overflow-hidden">
                   {bars.map((h, i) => (

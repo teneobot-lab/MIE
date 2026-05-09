@@ -79,6 +79,19 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       const startMusic = () => {
         setVideoId(vid);
         setIsPlaying(true);
+        // Record ke history
+        if (currentSong) {
+          fetch('/api/songs/history', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              songRequestId: currentSong.id,
+              title: currentSong.title,
+              artist: currentSong.artist,
+              requesterHandle: currentSong.requesterHandle,
+            }),
+          }).catch(() => {});
+        }
       };
       const openers = [
         `Oi oi! Selanjutnya kita putar`,

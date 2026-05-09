@@ -57,6 +57,35 @@ const menuItems = [
   },
 ];
 
+function useNewRequestNotif() {
+  const lastCountRef = useRef<number | null>(null);
+  useEffect(() => {
+    const check = () => {
+      fetch("/api/songs/recent-requests?limit=1")
+        .then(r => r.json())
+        .then((data: any[]) => {
+          const count = data?.length ?? 0;
+          if (lastCountRef.current !== null && count > lastCountRef.current) {
+            const song = data[0];
+            if (song && "Notification" in window && Notification.permission === "granted") {
+              new Notification("🎵 Request baru masuk!", {
+                body: `${song.title} - ${song.artist} dari @${song.requesterHandle}`,
+              });
+            }
+          }
+          lastCountRef.current = count;
+        }).catch(() => {});
+    };
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+    check();
+    const interval = setInterval(check, 10000);
+    useNewRequestNotif();
+  return () => clearInterval(interval);
+  }, []);
+}
+
 export default function Dashboard() {
   const today = new Date().toISOString().split("T")[0];
   const { data: laporan } = useQuery<Stats>({
