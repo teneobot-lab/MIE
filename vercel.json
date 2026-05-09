@@ -1,5 +1,6 @@
 {
-  "outputDirectory": "dist/public",
+  "buildCommand": "pnpm --filter mie-ayam-berteman run build",
+  "outputDirectory": "artifacts/mie-ayam-berteman/dist/public",
   "rewrites": [
     {
       "source": "/api-mab/:path*",
