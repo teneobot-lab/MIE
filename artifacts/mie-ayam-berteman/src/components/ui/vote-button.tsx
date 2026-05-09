@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
 import { ArrowUp } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,9 @@ type Props = {
 export function VoteButton({ count, onVote, disabled, size = "md" }: Props) {
   const [isVoting, setIsVoting] = useState(false);
   const [localCount, setLocalCount] = useState(count);
+  useEffect(() => {
+    if (!hasVoted) setLocalCount(count);
+  }, [count, hasVoted]);
   const [hasVoted, setHasVoted] = useState(false);
   const [animate, setAnimate] = useState(false);
 
