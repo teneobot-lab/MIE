@@ -119,6 +119,7 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
           }, 4000);
         }, 150);
       };
+      startMusic();
       trySpeech();
     });
   }, [currentSong?.title, currentSong?.artist]);
