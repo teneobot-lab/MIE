@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 export type AppSettings = {
   nama_usaha: string;
@@ -10,7 +10,7 @@ export type AppSettings = {
   tagline: string;
 };
 
-const DEFAULT: AppSettings = {
+export const DEFAULT_SETTINGS: AppSettings = {
   nama_usaha: "Mie Ayam Berteman",
   alamat: "Jl. Contoh No. 1, Jakarta",
   jam_buka: "08:00 - 22:00",
@@ -20,21 +20,25 @@ const DEFAULT: AppSettings = {
   tagline: "Warung makan dengan playlist request langsung!",
 };
 
-const SettingsContext = createContext<AppSettings>(DEFAULT);
+const SettingsContext = createContext<AppSettings>(DEFAULT_SETTINGS);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [settings, setSettings] = useState<AppSettings>(DEFAULT);
+  const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
 
   useEffect(() => {
     fetch("/api/settings")
       .then(r => r.json())
-      .then(setSettings)
+      .then((data) => setSettings({ ...DEFAULT_SETTINGS, ...data }))
       .catch(() => {});
   }, []);
 
-  return <SettingsContext.Provider value={settings}>{children}</SettingsContext.Provider>;
+  return (
+    <SettingsContext.Provider value={settings}>
+      {children}
+    </SettingsContext.Provider>
+  );
 }
 
-export function useSettings() {
+export function useSettings(): AppSettings {
   return useContext(SettingsContext);
 }
